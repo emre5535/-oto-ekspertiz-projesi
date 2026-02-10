@@ -1,0 +1,571 @@
+“Ó<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YÃ¶netim Paneli | Oto Ekspertiz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Scripts -->
+    <script src="js/carSchemas.js"></script>
+    <script src="js/main.js"></script> <!-- Added carSchemas.js -->
+    <script src="js/car-render.js"></script>
+    <script src="js/draw-canvas.js"></script>
+
+
+    <div class="app-container">
+        <!-- Sidebar injected by main.js -->
+
+        <div class="main-content">
+            <header class="flex-between" style="margin-bottom: 2rem;">
+                <div>
+                    <h1 style="font-size: 1.5rem; font-weight: 700;">YÃ¶netim Paneli</h1>
+                    <p style="color: var(--text-light);">HoÅŸgeldiniz, <span id="userName">KullanÄ±cÄ±</span></p>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <!-- Layout Editor Removed -->
+                    <a href="yeni-rapor.html" class="btn btn-primary"><i class="fas fa-plus"></i> Yeni Rapor</a>
+                </div>
+            </header>
+
+            <!-- Stats Cards -->
+            <div class="grid-3">
+                <div class="card">
+                    <div class="flex-between">
+                        <div>
+                            <p class="form-label">Toplam AraÃ§</p>
+                            <h2 id="statTotalCar" style="font-size: 2rem; color: var(--primary);">...</h2>
+                        </div>
+                        <i class="fas fa-car fa-2x" style="color: var(--primary-light); opacity: 0.5;"></i>
+                    </div>
+                </div>
+                <div class="card" onclick="window.location.href='bilgi-ekrani.html'"
+                    style="cursor:pointer; transition:transform 0.2s;">
+                    <div class="flex-between">
+                        <div>
+                            <p class="form-label">Bilgi EkranÄ±</p>
+                            <h2 style="font-size: 1.5rem; color: #8b5cf6;">TV Modu</h2>
+                        </div>
+                        <i class="fas fa-tv fa-2x" style="color: #c4b5fd;"></i>
+                    </div>
+                </div>
+
+
+            </div>
+
+
+            <!-- Recent Records -->
+            <div class="flex-between" style="margin: 2rem 0 1rem;">
+                <h3>Ekspertiz Listesi</h3>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="searchInput" placeholder="Ara (Plaka, Marka, DanÄ±ÅŸman)..."
+                        class="form-control" style="width:300px; padding: 5px 10px;" onkeyup="filterVehicles()">
+                    <button class="btn btn-sm btn-outline" onclick="filterVehicles()"><i
+                            class="fas fa-search"></i></button>
+                </div>
+            </div>
+
+            <!-- Action Navbar -->
+            <div class="flex-between" style="margin-bottom: 1rem; gap: 10px; flex-wrap: wrap;">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="openTakasModal()" id="takasBtn">
+                        <i class="fas fa-exchange-alt"></i> Takas Maili HazÄ±rla
+                    </button>
+                    <button class="btn btn-outline" onclick="openSigortaModal()" id="sigortaBtn" disabled>
+                        <i class="fas fa-shield-alt"></i> Sigorta Maili HazÄ±rla
+                    </button>
+                    <button class="btn btn-outline" onclick="openNoterModal()" id="noterBtn" disabled>
+                        <i class="fas fa-file-contract"></i> Noter PusulasÄ± HazÄ±rla
+                    </button>
+                </div>
+                <span id="selectionCount" style="color: var(--text-light); font-size: 0.9rem;">0 araÃ§ seÃ§ildi</span>
+            </div>
+
+            <div class="card" style="padding: 0;">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Plaka</th>
+                                <th>Marka/Model</th>
+                                <th style="text-align:right;">Takas</th>
+                                <th style="text-align:right;">Fiyat</th>
+                                <th>YÄ±l</th>
+                                <th>KM</th>
+                                <th>DanÄ±ÅŸman</th>
+                                <th style="text-align:center;">Son Kontrol</th>
+                                <th>Tarih</th>
+                                <th>Durum</th>
+                                <th>Ä°ÅŸlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vehicleTableBody">
+                            <tr>
+                                <td colspan="6" style="text-align: center;">YÃ¼kleniyor...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LAYOUT EDITOR REMOVED -->
+
+    <!-- TAKAS MODAL -->
+    <div id="takasModal" class="editor-modal" style="display: none; justify-content: center; align-items: center;">
+        <div class="editor-content" style="max-width: 800px; margin: 0 auto;">
+            <div class="flex-between"
+                style="margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                <h3>Takas Maili HazÄ±rla</h3>
+                <button class="btn btn-sm btn-outline" onclick="closeTakasModal()"><i class="fas fa-times"></i></button>
+            </div>
+
+            <p style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 1rem;">
+                SeÃ§ili araÃ§lar iÃ§in takas bilgilerini girin ve Excel dosyasÄ± oluÅŸturun.
+            </p>
+
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Plaka</th>
+                            <th>AraÃ§</th>
+                            <th>Takas DesteÄŸi</th>
+                            <th>Yeni Fiyat</th>
+                        </tr>
+                    </thead>
+                    <tbody id="takasTableBody">
+                        <!-- Rows injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex-between"
+                style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 15px;">
+                <button class="btn btn-outline" onclick="closeTakasModal()">Ä°ptal</button>
+                <button class="btn btn-primary" onclick="generateTakasMail()"><i class="fas fa-envelope"></i> Excel
+                    OluÅŸtur & Mail AÃ§</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONSTANTS & STATE ---
+        const defaultLayout = [
+            { id: "select", label: "SeÃ§", visible: true, width: "50px", roles: ["all"], type: "checkbox", editable: false },
+            { id: "plaka", label: "Plaka", visible: true, width: "100px", roles: ["all"], type: "link", editable: false },
+            { id: "marka", label: "Marka/Model", visible: true, width: "1fr", roles: ["all"], type: "text", editable: true },
+            { id: "fiyat_alim", label: "AlÄ±ÅŸ FiyatÄ±", visible: true, width: "120px", roles: ["Admin", "Patron"], type: "currency", editable: true },
+            { id: "fiyat_sat", label: "SatÄ±ÅŸ FiyatÄ±", visible: true, width: "120px", roles: ["Admin", "Patron"], type: "currency", editable: true },
+            { id: "yil", label: "YÄ±l", visible: true, width: "60px", roles: ["all"], type: "text", editable: true },
+            { id: "km", label: "KM", visible: true, width: "80px", roles: ["all"], type: "text", editable: true },
+            { id: "danisman", label: "DanÄ±ÅŸman", visible: true, width: "100px", roles: ["all"], type: "text", editable: false },
+            { id: "son_kontrol", label: "Son Kontrol", visible: true, width: "80px", roles: ["all"], type: "status", editable: false },
+            { id: "tarih", label: "Tarih", visible: true, width: "100px", roles: ["all"], type: "date", editable: false },
+            { id: "durum", label: "Durum", visible: true, width: "100px", roles: ["all"], type: "badge", editable: false }, // Could be editable dropdown
+            { id: "islem", label: "Ä°ÅŸlem", visible: true, width: "140px", roles: ["all"], type: "actions", editable: false }
+        ];
+
+        let currentLayout = JSON.parse(JSON.stringify(defaultLayout));
+        let activeEditInput = null;
+        let selectedVehicles = new Set(); // Track selected vehicle IDs
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 1. Load User
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (user) document.getElementById('userName').innerText = user.adSoyad;
+
+            // 2. Load Stats
+            try {
+                const stats = await apiRequest('stats');
+                document.getElementById('statTotalCar').innerText = stats.toplamArac;
+            } catch (e) { console.error("Stats error", e); }
+
+            // 3. Load Settings & Layout
+            try {
+                const settings = await apiRequest('settings');
+                if (settings && settings.dashboard) {
+                    currentLayout = settings.dashboard;
+                }
+
+            } catch (e) {
+                // Settings load error or missing button reference is fine
+                console.warn("Settings/UI init warning", e);
+            }
+
+            // 4. Load Vehicles
+            try {
+                const cars = await apiRequest('araclar');
+                window.allCars = cars;
+                renderVehicles(cars);
+            } catch (e) {
+                document.getElementById('vehicleTableBody').innerHTML = '<tr><td colspan="8">Veri yÃ¼klenemedi.</td></tr>';
+            }
+
+            // 5. Modal Outside Click Closure
+            window.onclick = function (event) {
+                const modal = document.getElementById('layoutModal');
+                if (event.target === modal) {
+                    closeLayoutEditor();
+                }
+            }
+        });
+
+        // --- CORE RENDERER ---
+        function renderVehicles(data) {
+            const tbody = document.getElementById('vehicleTableBody');
+            const theadTr = document.querySelector('.table thead tr');
+            tbody.innerHTML = '';
+
+            // Render Headers
+            if (theadTr) {
+                theadTr.innerHTML = '';
+                const user = JSON.parse(localStorage.getItem('user'));
+                const userRole = user ? (user.role || (user.isAdmin ? 'Admin' : 'DanÄ±ÅŸman')) : 'Guest';
+
+                currentLayout.forEach(col => {
+                    const isAllowed = col.roles.includes('all') || col.roles.includes(userRole);
+                    if (col.visible && isAllowed) {
+                        const th = document.createElement('th');
+                        th.innerText = col.label;
+                        if (col.type === 'currency') th.style.textAlign = 'right';
+                        if (col.type === 'status') th.style.textAlign = 'center';
+                        // Mobile Check
+                        if (window.innerWidth > 992) {
+                            if (col.width.includes('fr')) th.style.width = 'auto';
+                            else th.style.width = col.width;
+                        }
+                        theadTr.appendChild(th);
+                    }
+                });
+            }
+
+            if (data.length === 0) {
+                const colCount = currentLayout.filter(c => c.visible).length;
+                tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;">KayÄ±t bulunamadÄ±.</td></tr>`;
+                return;
+            }
+
+            const list = data.slice().reverse();
+            const user = JSON.parse(localStorage.getItem('user'));
+            const isAdmin = user && (user.isAdmin || user.role === 'Admin');
+            const userRole = user ? (user.role || (user.isAdmin ? 'Admin' : 'DanÄ±ÅŸman')) : 'Guest';
+
+            list.forEach(car => {
+                const tr = document.createElement('tr');
+
+                currentLayout.forEach(col => {
+                    const isAllowed = col.roles.includes('all') || col.roles.includes(userRole);
+
+                    if (col.visible && isAllowed) {
+                        const td = document.createElement('td');
+                        td.setAttribute('data-label', col.label);
+
+                        let content = '-';
+
+                        if (col.type === 'checkbox') {
+                            const vehicleId = car.plaka || car.id;
+                            const isChecked = selectedVehicles.has(vehicleId);
+                            content = `<input type="checkbox" class="vehicle-checkbox" data-vehicle-id="${vehicleId}" ${isChecked ? 'checked' : ''} onchange="toggleVehicleSelection('${vehicleId}')"/>`;
+                            td.style.textAlign = 'center';
+                        } else if (col.id === 'plaka') {
+                            const displayPlaka = car.plaka || `(ID: ${car.id})`;
+                            const linkId = car.plaka || car.id;
+                            content = `<a href="rapor-goruntule.html?plaka=${linkId}" class="text-primary" style="font-weight:bold;">${displayPlaka}</a>`;
+                        } else if (col.id === 'marka') {
+                            content = `${car.marka} ${car.model || ''}`;
+                        } else if (col.type === 'currency') {
+                            td.style.textAlign = 'right';
+                            const val = car[col.id];
+                            content = val ? new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(val) : '-';
+                            if (col.id === 'fiyat_alim') td.style.color = '#f59e0b';
+                            if (col.id === 'fiyat_sat') td.style.color = '#10b981';
+                            td.style.fontWeight = 'bold';
+                        } else if (col.id === 'son_kontrol') {
+                            td.style.textAlign = 'center';
+                            const status = car.son_kontrol_status || 0;
+                            let icon = '<i class="fas fa-minus" style="color:#ccc;"></i>';
+                            if (status === 1) icon = '<i class="fas fa-check-circle text-success" title="OnaylandÄ±"></i>';
+                            else if (status === 2) icon = '<i class="fas fa-times-circle text-danger" title="Reddedildi"></i>';
+                            content = icon;
+                            td.style.cursor = 'pointer';
+                            td.onclick = () => toggleCheckStatus(car.plaka || car.id, status, td);
+                        } else if (col.type === 'date') {
+                            content = new Date(car.createdAt).toLocaleDateString('tr-TR');
+                        } else if (col.id === 'durum') {
+                            content = `<span class="badge badge-warning">${car.durum || 'Bekliyor'}</span>`;
+                        } else if (col.id === 'islem') {
+                            const linkId = car.plaka || car.id;
+                            const deleteParam = car.plaka || car.id;
+                            let delBtn = '';
+                            if (isAdmin) delBtn = `<button onclick="deleteVehicle('${deleteParam}')" class="btn btn-outline" style="padding: 0.25rem 0.5rem; color:red; border-color:red; margin-left:5px;" title="Sil"><i class="fas fa-trash"></i></button>`;
+                            content = `<a href="rapor-goruntule.html?plaka=${linkId}" class="btn btn-outline" style="padding: 0.25rem 0.5rem;" title="GÃ¶rÃ¼ntÃ¼le"><i class="fas fa-eye"></i></a> <a href="yeni-rapor.html?plaka=${linkId}" class="btn btn-outline" style="padding: 0.25rem 0.5rem;" title="DÃ¼zenle"><i class="fas fa-edit"></i></a> ${delBtn}`;
+                        } else {
+                            content = car[col.id] || '-';
+                        }
+
+                        td.innerHTML = content;
+
+                        // --- INLINE EDIT TRIGGER ---
+                        // Check if column is editable AND user is Admin
+                        if (col.editable && isAdmin) {
+                            // Clean value safely
+                            const rawVal = car[col.id] !== undefined ? car[col.id] : '';
+                            const safeVal = String(rawVal).replace(/'/g, "&apos;");
+                            // Double-click to Edit
+                            td.ondblclick = function () { makeEditable(this, car.plaka || car.id, col.id, rawVal); };
+                            td.title = "Ã‡ift tÄ±klayarak dÃ¼zenleyebilirsiniz";
+                            td.classList.add('editable-cell'); // Add a class for pointer/hover styling if needed
+                        }
+
+                        tr.appendChild(td);
+                    }
+                });
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- INLINE EDITING FUNCTIONS ---
+        function makeEditable(td, id, field, originalValue) {
+            if (activeEditInput) return; // Prevent multiple
+
+            const w = td.offsetWidth;
+            td.innerHTML = '';
+
+            const input = document.createElement('input');
+            input.type = 'text'; // Default to text
+            input.value = originalValue;
+            input.style.width = (w - 10) + 'px';
+            input.style.padding = '4px 8px';
+            input.className = 'form-control'; // Reuse style
+
+            // Save on Blur or Enter
+            input.onblur = () => { saveCell(td, id, field, input.value, originalValue); };
+            input.onkeydown = (e) => {
+                if (e.key === 'Enter') input.blur();
+                if (e.key === 'Escape') cancelEdit(td, originalValue);
+            };
+
+            td.appendChild(input);
+            input.focus();
+            activeEditInput = input;
+        }
+
+        async function saveCell(td, id, field, newValue, originalValue) {
+            activeEditInput = null;
+            if (String(newValue) === String(originalValue)) {
+                // Restore without reload if possible, or just reload to be safe and format currency
+                // Simple restore for speed:
+                // td.innerText = newValue; 
+                // But better to reload to get Currency Formatting etc.
+                renderVehicles(window.allCars);
+                return;
+            }
+
+            try {
+                td.innerHTML = '<i class="fas fa-spinner fa-spin text-primary"></i>';
+                const body = {};
+                body[field] = newValue;
+                await apiRequest(`arac/${id}`, 'PUT', body);
+
+                // Update Local Cache
+                const car = window.allCars.find(c => (c.plaka === id || c.id === id));
+                if (car) car[field] = newValue;
+
+                renderVehicles(window.allCars);
+                // Optional: Toast success
+            } catch (e) {
+                console.error("Edit failed", e);
+                alert("GÃ¼ncelleme baÅŸarÄ±sÄ±z.");
+                renderVehicles(window.allCars); // Revert
+            }
+        }
+
+        function cancelEdit(td, originalValue) {
+            activeEditInput = null;
+            renderVehicles(window.allCars);
+        }
+
+        // --- HELPER FUNCTIONS ---
+        function filterVehicles() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            if (!window.allCars) return;
+            const filtered = window.allCars.filter(car => {
+                const p = (car.plaka || '').toLowerCase();
+                const m = (car.marka + ' ' + (car.model || '')).toLowerCase();
+                const d = (car.danisman || '').toLowerCase();
+                return p.includes(query) || m.includes(query) || d.includes(query);
+            });
+            renderVehicles(filtered);
+        }
+
+        async function deleteVehicle(plaka) {
+            if (!confirm(`${plaka} plakalÄ± aracÄ± silmek istediÄŸinize emin misiniz?`)) return;
+            try {
+                const res = await fetch(`/api/arac/${plaka}`, { method: 'DELETE' });
+                if (res.ok) {
+                    window.location.reload();
+                } else {
+                    alert("Silinemedi.");
+                }
+            } catch (e) { alert("Hata: " + e.message); }
+        }
+
+        async function toggleCheckStatus(plaka, currentStatus, cell) {
+            let nextStatus = currentStatus < 2 ? currentStatus + 1 : 0;
+            // Optimistic
+            let icon = '<i class="fas fa-minus" style="color:#ccc;"></i>';
+            if (nextStatus === 1) icon = '<i class="fas fa-check-circle text-success"></i>';
+            else if (nextStatus === 2) icon = '<i class="fas fa-times-circle text-danger"></i>';
+            cell.innerHTML = icon;
+
+            try {
+                await apiRequest(`arac/${plaka}`, 'PUT', { son_kontrol_status: nextStatus });
+                const car = window.allCars.find(c => c.plaka === plaka);
+                if (car) car.son_kontrol_status = nextStatus;
+            } catch (e) { console.error(e); }
+        }
+
+        // --- LAYOUT EDITOR FUNCTIONS REMOVED ---
+
+        // --- VEHICLE SELECTION & EMAIL FUNCTIONS ---
+        // ---VEHICLE SELECTION & EMAIL FUNCTIONS ---
+        window.toggleVehicleSelection = function (vehicleId) {
+            if (selectedVehicles.has(vehicleId)) {
+                selectedVehicles.delete(vehicleId);
+            } else {
+                selectedVehicles.add(vehicleId);
+            }
+            updateSelectionCount();
+        };
+
+        window.updateSelectionCount = function () {
+            document.getElementById('selectionCount').innerText = `${selectedVehicles.size} araÃ§ seÃ§ildi`;
+        };
+
+        window.openTakasModal = function () {
+            if (selectedVehicles.size === 0) {
+                alert('LÃ¼tfen en az bir araÃ§ seÃ§in.');
+                return;
+            }
+
+            const modal = document.getElementById('takasModal');
+            const tbody = document.getElementById('takasTableBody');
+            tbody.innerHTML = '';
+
+            selectedVehicles.forEach(vehicleId => {
+                const car = window.allCars.find(c => (c.plaka || c.id) == vehicleId);
+                if (!car) return;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${car.plaka || car.id}</td>
+                    <td>${car.marka} ${car.model || ''}</td>
+                    <td>
+                        <label><input type="radio" name="takas_${vehicleId}" value="Evet" checked> Evet</label>
+                        <label style="margin-left: 10px;"><input type="radio" name="takas_${vehicleId}" value="HayÄ±r"> HayÄ±r</label>
+                    </td>
+                    <td><input type="number" class="form-control" id="yeni_fiyat_${vehicleId}" placeholder="Yeni Fiyat" style="width: 150px;"/></td>
+                `;
+                tbody.appendChild(tr);
+                tbody.appendChild(tr);
+            });
+
+            // modal is already defined at the top of the function
+            if (modal.parentElement !== document.body) {
+                document.body.appendChild(modal);
+            }
+            modal.style.display = 'flex';
+        };
+
+        window.closeTakasModal = function () {
+            document.getElementById('takasModal').style.display = 'none';
+        };
+
+        window.generateTakasMail = async function () {
+            const mailData = [];
+
+            selectedVehicles.forEach(vehicleId => {
+                const car = window.allCars.find(c => (c.plaka || c.id) == vehicleId);
+                if (!car) return;
+
+                const takasRadio = document.querySelector(`input[name="takas_${vehicleId}"]:checked`);
+                const takasTestigi = takasRadio ? takasRadio.value : 'HayÄ±r';
+                const yeniFiyat = document.getElementById(`yeni_fiyat_${vehicleId}`)?.value || car.fiyat_sat || '';
+
+                mailData.push({
+                    id: vehicleId,
+                    takas_testigi: takasTestigi,
+                    yeni_fiyat: yeniFiyat
+                });
+            });
+
+            try {
+                showToast('Excel oluÅŸturuluyor...', 'info');
+
+                const response = await fetch('/api/mail/takas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ vehicles: mailData })
+                });
+
+                if (!response.ok) throw new Error('Excel oluÅŸturulamadÄ±');
+
+                // Download Excel
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Takas_Listesi_${new Date().toISOString().split('T')[0]}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                showToast('Excel indirildi!');
+
+                // Open mailto link
+                setTimeout(() => {
+                    window.location.href = 'mailto:satis@izkarford.com.tr?subject=Takas Maili&body=Merhaba,%0D%0A%0D%0ATakas bilgileri ektedir.%0D%0A%0D%0ATeÅŸekkÃ¼rler.';
+                }, 500);
+
+                closeTakasModal();
+            } catch (error) {
+                console.error(error);
+                showToast('Hata oluÅŸtu: ' + error.message, 'error');
+            }
+        };
+
+        window.openSigortaModal = function () {
+            alert('Sigorta Maili Ã¶zelliÄŸi yakÄ±nda eklenecek.');
+        };
+
+        window.openNoterModal = function () {
+            alert('Noter PusulasÄ± Ã¶zelliÄŸi yakÄ±nda eklenecek.');
+        };
+    </script>
+    </body>
+
+</html>ê *cascade08êŒŒ• *cascade08•–– *cascade08££î *cascade08î„„ *cascade08‘*cascade08
+‘” ”•*cascade08
+•– –™*cascade08
+™› ›œ *cascade08œ*cascade08« *cascade08«°*cascade08°² *cascade08²¾ *cascade08¾Á*cascade08
+ÁÃ ÃÅ*cascade08
+Åƒ ƒ‰ *cascade08‰Š *cascade08
+Š« «¬ *cascade08¬´*cascade08´µ *cascade08µ¼*cascade08¼¾ *cascade08¾Ç*cascade08ÇÈ *cascade08
+ÈÏ ÏÛ *cascade08ÛÜ*cascade08
+Üİ İŞ*cascade08
+Şå åæ*cascade08
+æí íî*cascade08
+îï ïğ*cascade08
+ğñ ñò*cascade08
+òó óô*cascade08
+ôõ õö*cascade08
+ö	 	æ *cascade08æö *cascade08ö† *cascade08†’ *cascade08’•*cascade08•™ *cascade08™ *cascade08*cascade08Ÿ *cascade08Ÿ· *cascade08·»*cascade08»Ä *cascade08ÄÜ*cascade08Üú *cascade08úü *cascade08ü€*cascade08€‹ *cascade08‹Œ *cascade08Œ *cascade08•*cascade08•– *cascade08–™*cascade08™³ *cascade08³´*cascade08´¸*cascade08¸ß *cascade08ßã*cascade08ãõ *cascade08õö *cascade08öù*cascade08ùú *cascade08ú *cascade08•*cascade08•› *cascade08›œ *cascade08œ¨ *cascade08¨ª*cascade08ª¬ *cascade08¬­ *cascade08­¯*cascade08¯° *cascade08°µ *cascade08µ¶*cascade08¶· *cascade08·¸*cascade08¸¹ *cascade08¹¿*cascade08¿À *cascade08ÀÂ*cascade08ÂÆ *cascade08Æß*cascade08ß€ *cascade08€ *cascade08‚ *cascade08‚’*cascade08’“ *cascade08“—*cascade08—· *cascade08·º *cascade08º¾*cascade08¾Ï *cascade08ÏĞ*cascade08Ğİ *cascade08İæ*cascade08æç *cascade08çë*cascade08ëí *cascade08íî*cascade08îñ *cascade08ñó*cascade08ó÷ *cascade08÷û*cascade08û *cascade08’ *cascade08’¯*cascade08¯Ò *cascade08ÒÕ *cascade08ÕÙ*cascade08Ùä *cascade08äå *cascade08åê *cascade08ê¸ *cascade08¸Í*cascade08Íé *cascade08é¤¤Ò *cascade08ÒÖ*cascade08ÖÅ *cascade08ÅÉ*cascade08É“ *cascade08“—*cascade08—¢ *cascade08¢¦*cascade08¦ *cascade08*cascade08¤ *cascade08¤¦*cascade08¦ğ *cascade08ğô*cascade08ôÿ *cascade08ÿƒ*cascade08ƒç *cascade08çê*cascade08êş *cascade08şÿ*cascade08ÿÎ *cascade08ÎÒ*cascade08Òî *cascade08îï*cascade08ïñ *cascade08ñó*cascade08ó… *cascade08…†*cascade08†‡ *cascade08‡ˆ*cascade08ˆŒ *cascade08Œ*cascade08“ *cascade08“›*cascade08› *cascade08£*cascade08£¤ *cascade08¤¦*cascade08¦ê *cascade08êõ *cascade08õù*cascade08ùƒ  *cascade08ƒ ‡ *cascade08‡   *cascade08  *cascade08 Ã  *cascade08Ã Ç *cascade08Ç ç  *cascade08ç ë *cascade08ë ¦! *cascade08¦!ª!*cascade08ª!³! *cascade08³!µ! *cascade08µ!Ë! *cascade08Ë!Ï!*cascade08Ï!Õ! *cascade08Õ!Ö!*cascade08Ö!î! *cascade08î!ò!*cascade08ò!õ!*cascade08õ!…" *cascade08…"‰"*cascade08‰"»" *cascade08»"¼"*cascade08¼"Õ" *cascade08Õ"Ø"*cascade08Ø"Û"*cascade08Û"Ş" *cascade08
+Ş"ò# ò#ó# *cascade08ó#ù#*cascade08ù#ú# *cascade08ú#$*cascade08$$ *cascade08$š$ *cascade08š$$*cascade08$¥$ *cascade08¥$¦$ *cascade08¦$«$*cascade08«$¯$*cascade08¯$Í$ *cascade08Í$Î$ *cascade08Î$×$*cascade08×$Ø$ *cascade08Ø$Ù$*cascade08Ù$ı$*cascade08ı$ş$ *cascade08ş$Ÿ%*cascade08Ÿ% % *cascade08 %ª% *cascade08ª%É% *cascade08É%Í%*cascade08Í%Ñ%*cascade08Ñ%á% *cascade08á%ã%*cascade08ã%å%*cascade08å%ÿ% *cascade08ÿ%&*cascade08&‘& *cascade08‘&•&*cascade08•&—& *cascade08—&Ã& *cascade08Ã&Æ&*cascade08Æ&É&*cascade08É&Ş& *cascade08Ş&ß&*cascade08ß&æ& *cascade08æ&ê&*cascade08ê&ˆ' *cascade08ˆ'‹'*cascade08‹''*cascade08'Ÿ' *cascade08Ÿ' '*cascade08 '×' *cascade08×'Û'*cascade08Û'á' *cascade08á'å'*cascade08å'Ú( *cascade08Ú(Ş(*cascade08Ş(å( *cascade08å(è(*cascade08è(ü( *cascade08ü(ı(*cascade08ı(‡) *cascade08‡)‹)*cascade08‹)¥) *cascade08¥)©)*cascade08©)³) *cascade08³)µ) *cascade08µ)Ã) *cascade08Ã)Å)*cascade08Å)É)*cascade08É)Ñ) *cascade08Ñ)Õ)*cascade08Õ)Ø)*cascade08Ø)å) *cascade08å)ï)*cascade08ï)ó)*cascade08ó)ô) *cascade08ô)†* *cascade08†*ˆ**cascade08ˆ*Š* *cascade08Š*‹**cascade08‹*š* *cascade08š*Ü* *cascade08Ü*¡+*cascade08¡+ß+ *cascade08ß+ï+*cascade08ï+Ç8 *cascade08Ç8Û8 *cascade08Û8ê8*cascade08ê8ë8 *cascade08ë8ğ8*cascade08ğ8ñ8 *cascade08ñ8ô8*cascade08ô8•9 *cascade08•9”:*cascade08”:ü: *cascade08ü:;*cascade08;ü; *cascade08ü;Œ<*cascade08Œ<•= *cascade08•=¥=*cascade08¥=®> *cascade08®>¾>*cascade08¾>¥? *cascade08¥?µ?*cascade08µ?™@ *cascade08™@©@*cascade08©@œA *cascade08œA­A*cascade08­A¥B *cascade08¥B¶B*cascade08¶B¡C *cascade08¡C²C*cascade08²CD *cascade08D¯D*cascade08¯D²D *cascade08²DĞD*cascade08ĞD½E *cascade08½EÎE*cascade08ÎE°F *cascade08°F³F*cascade08³FµF *cascade08µF¹F*cascade08¹FºF *cascade08ºF½F*cascade08½F¾F *cascade08¾FÂF*cascade08ÂFÃF *cascade08ÃFÆF*cascade08ÆFÇF *cascade08ÇFÍF *cascade08ÍF–G*cascade08–G¢G *cascade08¢G£G *cascade08£G¦G*cascade08¦G¨G *cascade08¨G¹G*cascade08¹GH *cascade08HH*cascade08H‘H *cascade08‘HºH*cascade08ºH»H *cascade08»HÍH*cascade08ÍHÎH *cascade08ÎHâH*cascade08âHãH *cascade08ãHóH*cascade08óHôH *cascade08ôH›I*cascade08›IœI *cascade08œI¨I*cascade08¨I©I *cascade08©IĞI*cascade08ĞIÑI *cascade08ÑIŠJ*cascade08ŠJ‹J *cascade08‹J¹J*cascade08¹JºJ *cascade08ºJ¼J*cascade08¼J½J *cascade08½JÀJ*cascade08ÀJÁJ *cascade08ÁJÑJ*cascade08ÑJÒJ *cascade08ÒJÓJ*cascade08ÓJÔJ *cascade08ÔJæJ*cascade08æJçJ *cascade08çJìJ*cascade08ìJíJ *cascade08íJ›K*cascade08›KœK *cascade08œKÊK*cascade08ÊKËK *cascade08ËKâK*cascade08âKÈM *cascade08ÈMÉM*cascade08ÉMÊM *cascade08ÊMÌM*cascade08ÌMÍM *cascade08ÍMÏM*cascade08ÏMĞM *cascade08ĞMÓM*cascade08ÓMÔM *cascade08ÔMÕM*cascade08ÕMçM *cascade08çMéM*cascade08éMêM *cascade08êMëM*cascade08ëMìM *cascade08ìMîM*cascade08îMïM *cascade08ïMñM*cascade08ñMòM *cascade08òMöM*cascade08öMüM *cascade08üMıM*cascade08ıMşM *cascade08şM€N*cascade08€NƒN *cascade08ƒN†N*cascade08†N‡N *cascade08‡NˆN*cascade08ˆN‰N *cascade08‰NŠN*cascade08ŠNN *cascade08N‘N*cascade08‘N’N *cascade08’N“N*cascade08“N”N *cascade08”N•N*cascade08•N—N *cascade08—N˜N*cascade08˜N™N *cascade08™NšN*cascade08šNN *cascade08NN*cascade08N»N *cascade08»N½N½N¾N *cascade08¾N¿N*cascade08¿NÉN *cascade08ÉNÌNÌNÍN *cascade08ÍNÑNÑNÒN *cascade08ÒNÔNÔNÕN *cascade08ÕNÙNÙNßN *cascade08ßNìN*cascade08ìNğN *cascade08ğN´P*cascade08´P½P *cascade08½PÆP*cascade08ÆPÇP *cascade08ÇPÅQ*cascade08ÅQÈQ *cascade08ÈQÕQ*cascade08ÕQ×Q *cascade08×QÚQ*cascade08ÚQâQ *cascade08âQåQ*cascade08åQèQ *cascade08èQñQ*cascade08ñQòQ *cascade08òQãR*cascade08ãRäR *cascade08äRìR*cascade08ìRíR *cascade08íRœT*cascade08œT¤T *cascade08¤T¦T*cascade08¦T§T *cascade08§TªT*cascade08ªT¡\ *cascade08¡\¢\*cascade08¢\¨\ *cascade08¨\©\*cascade08©\Àg *cascade08Àgšk*cascade08šk©‚ *cascade08©‚µ‚*cascade08µ‚Å‚ *cascade08Å‚”ƒ*cascade08”ƒ¦ƒ *cascade08¦ƒÊƒ*cascade08ÊƒËƒ *cascade08ËƒÏƒ*cascade08ÏƒĞƒ *cascade08ĞƒÛƒ*cascade08ÛƒÜƒ *cascade08Üƒİƒ*cascade08İƒŞƒ *cascade08Şƒâƒ*cascade08âƒüƒ *cascade08üƒşƒ*cascade08şƒÿƒ *cascade08ÿƒ‚„*cascade08‚„ƒ„ *cascade08ƒ„‰„*cascade08‰„Š„ *cascade08Š„„*cascade08„„ *cascade08„–„*cascade08–„—„ *cascade08—„š„*cascade08š„´„ *cascade08´„¶„*cascade08¶„·„ *cascade08·„¹„*cascade08¹„º„ *cascade08º„Â„*cascade08Â„Ã„ *cascade08Ã„È„*cascade08È„É„ *cascade08É„Ê„*cascade08Ê„Ë„ *cascade08Ë„š…*cascade08š…½… *cascade08½…¿…*cascade08¿…Á… *cascade08Á…Å…*cascade08Å…Æ… *cascade08Æ…Ç…*cascade08Ç…É… *cascade08É…Ê…*cascade08Ê…Ë… *cascade08Ë…Ï…*cascade08Ï…ğ… *cascade08ğ…ñ…*cascade08ñ…ò… *cascade08ò…†*cascade08†† *cascade08†’†*cascade08’†“† *cascade08“†•†*cascade08•†–† *cascade08–†—†*cascade08—†¤† *cascade08¤†¥†*cascade08¥†Ã† *cascade08Ã†ş†*cascade08ş†€‡ *cascade08€‡³‡*cascade08³‡µ‡ *cascade08µ‡¹‡*cascade08¹‡Ô‡ *cascade08Ô‡Û‡*cascade08Û‡Ü‡ *cascade08Ü‡ã‡*cascade08ã‡ä‡ *cascade08ä‡è‡*cascade08è‡é‡ *cascade08é‡ò‡*cascade08ò‡ó‡ *cascade08ó‡„ˆ*cascade08„ˆ…ˆ *cascade08…ˆˆ*cascade08ˆˆ *cascade08ˆ–ˆ*cascade08–ˆ™ˆ *cascade08™ˆÈˆ*cascade08ÈˆÉˆ *cascade08Éˆêˆ*cascade08êˆìˆ *cascade08ìˆš‰*cascade08š‰›‰ *cascade08›‰»‰*cascade08»‰¼‰ *cascade08¼‰ŒŠ*cascade08ŒŠ¸‹ *cascade08¸‹Ã‹*cascade08Ã‹Ç‹ *cascade08Ç‹Ñ‹*cascade08Ñ‹Ò‹ *cascade08Ò‹Î*cascade08ÎÏ *cascade08ÏÓ*cascade08ÓÔ *cascade08ÔÍ—*cascade08Í—Î— *cascade08Î—Š›*cascade08Š›‹› *cascade08‹›‡œ*cascade08‡œˆœ *cascade08ˆœÄ*cascade08ÄÅ *cascade08Åø*cascade08øù *cascade08ù­ *cascade08­­*cascade08­¡­ *cascade08¡­¢­*cascade08¢­¥­ *cascade08¥­¦­*cascade08¦­ª­ *cascade08ª­ì­ *cascade08ì­¥®*cascade08¥®¦® *cascade08
+¦®§®§®¨® *cascade08
+¨®ª®ª®À® *cascade08
+À®Ì®Ì®É° *cascade08É°Ê°*cascade08Ê°Ö° *cascade08Ö°×°*cascade08×°Ù° *cascade08Ù°İ°*cascade08İ°ñ° *cascade08ñ°ı°*cascade08ı°ú± *cascade08ú±û±*cascade08û±‡² *cascade08‡²ˆ²*cascade08ˆ²Š² *cascade08Š²²*cascade08²œ² *cascade08œ²¨²*cascade08¨²ü» *cascade08ü»¤¼*cascade08¤¼®¼*cascade08®¼²¼ *cascade08²¼·¼ *cascade08·¼¹¼*cascade08¹¼»¼*cascade08»¼¾¼ *cascade08¾¼À¼ *cascade08À¼Â¼*cascade08Â¼Ã¼ *cascade08Ã¼È¼*cascade08È¼É¼ *cascade08É¼Ì¼*cascade08Ì¼Í¼ *cascade08Í¼Ï¼*cascade08Ï¼Ğ¼ *cascade08Ğ¼Ô¼*cascade08Ô¼Õ¼ *cascade08Õ¼Ø¼*cascade08Ø¼Ù¼ *cascade08Ù¼Ú¼*cascade08Ú¼Û¼ *cascade08Û¼ã¼*cascade08ã¼ä¼ *cascade08ä¼ç¼*cascade08ç¼è¼ *cascade08è¼é¼*cascade08é¼ê¼ *cascade08ê¼ë¼*cascade08ë¼ì¼ *cascade08ì¼í¼*cascade08í¼û¼ *cascade08û¼¤½*cascade08¤½¥½ *cascade08¥½§½*cascade08§½©½ *cascade08©½­½*cascade08­½Ú½ *cascade08Ú½Ü½*cascade08Ü½â½ *cascade08â½æ½*cascade08æ½è½ *cascade08è½é½*cascade08é½ÿ½ *cascade08ÿ½‚¾*cascade08‚¾ƒ¾ *cascade08ƒ¾ˆ¾*cascade08ˆ¾‰¾ *cascade08‰¾¾*cascade08¾¾ *cascade08¾’¾*cascade08’¾Ÿ¾ *cascade08Ÿ¾ ¾*cascade08 ¾¬¾ *cascade08¬¾­¾*cascade08­¾¯¾ *cascade08¯¾³¾*cascade08³¾Â¾ *cascade08Â¾Î¾*cascade08Î¾ˆ¿ *cascade08ˆ¿Š¿*cascade08Š¿‹¿ *cascade08‹¿¿*cascade08¿¿ *cascade08¿˜¿*cascade08˜¿™¿ *cascade08™¿›¿*cascade08›¿¨¿ *cascade08¨¿©¿*cascade08©¿µ¿ *cascade08µ¿·¿*cascade08·¿¸¿ *cascade08¸¿¹¿*cascade08¹¿º¿ *cascade08º¿¼¿*cascade08¼¿Í¿ *cascade08Í¿ß¿*cascade08ß¿åĞ *cascade08åĞæĞ*cascade08æĞòĞ *cascade08òĞóĞ*cascade08óĞõĞ *cascade08õĞùĞ*cascade08ùĞ‰Ñ *cascade08‰Ñ•Ñ*cascade08•ÑèÑ *cascade08èÑéÑ*cascade08éÑõÑ *cascade08õÑöÑ*cascade08öÑøÑ *cascade08øÑüÑ*cascade08üÑŠÒ *cascade08ŠÒ–Ò*cascade08–ÒëÒ *cascade08ëÒìÒ*cascade08ìÒîÒ *cascade08îÒıÒ *cascade08ıÒÓ*cascade08Ó“Ó *cascade082Dfile:///c:/Users/Emmi/Documents/ekspertiz-node/public/dashboard.html

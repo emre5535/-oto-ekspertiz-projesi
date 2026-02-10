@@ -1,0 +1,186 @@
+A<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dosya Ä°simlendirme | Oto Ekspertiz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- JSZip & FileSaver -->
+    <!-- JSZip & FileSaver -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar injected -->
+
+        <div class="main-content">
+            <h1>Otomatik Dosya Ä°simlendirme</h1>
+            <p class="mb-4" style="color: var(--text-light);">
+                Ruhsat fotoÄŸraflarÄ±nÄ± veya Ã§oklu PDF dosyalarÄ±nÄ± yÃ¼kleyin. Sistem otomatik olarak:<br>
+                1. PDF'leri sayfalara ayÄ±rÄ±r.<br>
+                2. Resimleri PDF formatÄ±na Ã§evirir.<br>
+                3. Ä°Ã§erikteki plakayÄ± okuyup dosyayÄ± isimlendirir.
+            </p>
+
+            <div class="card">
+                <div class="upload-zone" id="batchDropZone" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-layer-group fa-3x" style="color:var(--primary); margin-bottom:1rem;"></i>
+                    <h3>DosyalarÄ± SeÃ§in veya SÃ¼rÃ¼kleyin</h3>
+                    <p style="color:var(--text-light);">JPG, PNG, PDF (Maks 10 Dosya)</p>
+                    <input type="file" id="fileInput" hidden multiple accept="image/*,application/pdf"
+                        onchange="handleFiles(this.files)">
+                </div>
+
+                <div id="actionArea" class="hidden" style="margin-top: 2rem; text-align: right;">
+                    <span id="statusText" style="margin-right: 1rem; font-weight: 500;"></span>
+                    <button id="processBtn" class="btn btn-primary" onclick="processFiles()"><i class="fas fa-cogs"></i>
+                        Ä°ÅŸlemi BaÅŸlat</button>
+                    <button id="downloadBtn" class="btn btn-success hidden" onclick="downloadZip()"><i
+                            class="fas fa-file-archive"></i> TÃ¼mÃ¼nÃ¼ Ä°ndir (.ZIP)</button>
+                </div>
+            </div>
+
+            <div class="card hidden" id="resultCard">
+                <h3>Ä°ÅŸlem SonuÃ§larÄ±</h3>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Orijinal Dosya</th>
+                                <th>TÃ¼r</th>
+                                <th>Bulunan Plaka</th>
+                                <th>Yeni Ä°sim</th>
+                                <th>Durum</th>
+                                <th>Ä°ndir</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        let selectedFiles = [];
+        let processedResults = [];
+
+        async function handleFiles(files) {
+            selectedFiles = Array.from(files);
+
+            if (selectedFiles.length > 0) {
+                $('#actionArea').classList.remove('hidden');
+                $('#statusText').innerText = `${selectedFiles.length} dosya seÃ§ildi. Ä°ÅŸleniyor...`;
+                $('#processBtn').disabled = true; // Auto started
+                $('#downloadBtn').classList.add('hidden');
+                $('#resultCard').classList.add('hidden');
+
+                // Auto Start
+                await processFiles();
+            }
+        }
+
+        async function processFiles() {
+            const btn = $('#processBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ä°ÅŸleniyor...';
+
+            const formData = new FormData();
+            selectedFiles.forEach(f => formData.append('files', f));
+
+            $('#resultCard').classList.remove('hidden');
+            const tbody = document.getElementById('resultBody');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">LÃ¼tfen bekleyin...</td></tr>';
+
+            try {
+                // Updated endpoint
+                const res = await fetch('/batch-rename', { method: 'POST', body: formData });
+                const text = await res.text();
+                let data;
+
+                try {
+                    data = JSON.parse(text);
+                } catch (err) {
+                    console.error("Server Response Not JSON:", text);
+                    // Show raw error from server (likely HTML or simple string)
+                    showToast(`Sunucu HatasÄ±: ${text.substring(0, 100)}...`, 'error');
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Sunucu HatasÄ± (Detaylar konsolda)</td></tr>';
+                    return;
+                }
+
+                if (data.success) {
+                    processedResults = data.results;
+                    renderResults(data.results);
+                    $('#statusText').innerText = "Ä°ÅŸlem TamamlandÄ±!";
+                    $('#downloadBtn').classList.remove('hidden');
+                } else {
+                    showToast("Hata: " + data.error, 'error');
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">${data.error}</td></tr>`;
+                }
+            } catch (e) {
+                console.error(e);
+                showToast("BaÄŸlantÄ± hatasÄ±", 'error');
+            } finally {
+                btn.innerHTML = '<i class="fas fa-check"></i> TamamlandÄ±';
+            }
+        }
+
+        function renderResults(results) {
+            const tbody = document.getElementById('resultBody');
+            tbody.innerHTML = '';
+
+            results.forEach(item => {
+                const tr = document.createElement('tr');
+                if (item.error) {
+                    tr.innerHTML = `
+                    <td data-label="Orijinal Dosya">${item.originalName}</td>
+                    <td data-label="TÃ¼r">-</td>
+                    <td data-label="Bulunan Plaka">-</td>
+                    <td data-label="Yeni Ä°sim">-</td>
+                    <td data-label="Durum"><span class="badge badge-danger">Hata</span></td>
+                    <td data-label="Ä°ndir">-</td>
+                `;
+                } else {
+                    tr.innerHTML = `
+                    <td data-label="Orijinal Dosya">${item.originalName} ${item.index > 1 ? '(Sayfa ' + item.index + ')' : ''}</td>
+                    <td data-label="TÃ¼r">${item.type}</td>
+                    <td data-label="Bulunan Plaka" style="font-weight:bold;">${item.plaka}</td>
+                    <td data-label="Yeni Ä°sim">${item.fileName}</td>
+                    <td data-label="Durum"><span class="badge badge-success">BaÅŸarÄ±lÄ±</span></td>
+                    <td data-label="Ä°ndir"><a href="${item.dataUrl}" download="${item.fileName}" class="btn btn-outline btn-sm"><i class="fas fa-download"></i> Ä°ndir</a></td>
+                `;
+                }
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function downloadZip() {
+            if (processedResults.length === 0) return;
+
+            const zip = new JSZip();
+
+            const promises = processedResults.map(async (item) => {
+                if (!item.error && item.dataUrl) {
+                    try {
+                        const response = await fetch(item.dataUrl);
+                        const blob = await response.blob();
+                        zip.file(item.fileName, blob);
+                    } catch (e) { console.error("Zip fetch error", e); }
+                }
+            });
+
+            await Promise.all(promises);
+
+            const content = await zip.generateAsync({ type: "blob" });
+            saveAs(content, "OtoEksper_Arsiv.zip");
+        }
+    </script>
+</body>
+
+</html>N *cascade08Nššî *cascade08î*cascade08™ *cascade08™š*cascade08š¡ *cascade08¡§*cascade08§’ *cascade08’²²¾ *cascade08¾à*cascade08àä *cascade08äñ*cascade08ñœ *cascade08œ¾*cascade08¾Â *cascade08ÂÕ*cascade08ÕÕ	 *cascade08Õ	Ö	*cascade08Ö	×	 *cascade08×	Ú	*cascade08Ú	Ü	 *cascade08Ü	İ	*cascade08İ	Ş	 *cascade08Ş	à	*cascade08à	ã	 *cascade08ã	ä	*cascade08ä	ç	 *cascade08ç	è	*cascade08è	ë	 *cascade08ë	î	*cascade08î	ï	 *cascade08ï	ğ	*cascade08ğ	ñ	 *cascade08ñ	ó	*cascade08ó	ö	 *cascade08ö	÷	*cascade08÷	Á1 *cascade08Á1İ1*cascade08İ12 *cascade082¢2*cascade08¢2Â2 *cascade08Â2İ2*cascade08İ2ı2 *cascade08ı2•3*cascade08•3µ3 *cascade08µ3È3*cascade08È3“4 *cascade08“4§4*cascade08§4›5 *cascade08›5·5*cascade08·5 6 *cascade08 6²6*cascade08²6Ş6 *cascade08Ş6ù6*cascade08ù6¾7 *cascade08¾7Ö7*cascade08Ö7…8 *cascade08…8˜8*cascade08˜8ë8 *cascade08ë8ÿ8*cascade08ÿ8ô9 *cascade08ô9û9*cascade08û9A *cascade082Mfile:///c:/Users/Emmi/Documents/ekspertiz-node/public/dosya-isimlendirme.html

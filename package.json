@@ -1,0 +1,33 @@
+ú{
+  "name": "ekspertiz-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.1.0",
+    "chart.js": "^4.5.1",
+    "compression": "^1.8.1",
+    "cors": "^2.8.6",
+    "exceljs": "^4.4.0",
+    "express": "^5.2.1",
+    "file-saver": "^2.0.5",
+    "jszip": "^3.10.1",
+    "multer": "^2.0.2",
+    "nodemailer": "^8.0.1",
+    "pdf-lib": "^1.17.1",
+    "pdf-parse": "^2.4.5",
+    "pureimage": "^0.4.18",
+    "sequelize": "^6.37.7",
+    "sqlite3": "^5.1.7",
+    "tesseract.js": "^7.0.0"
+  }
+}
+ú2;file:///c:/Users/Emmi/Documents/ekspertiz-node/package.json

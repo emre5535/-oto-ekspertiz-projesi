@@ -1,0 +1,460 @@
+ğ<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yeni Rapor | OtoEksperPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* WIZARD STYLES */
+        .wizard-header {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0.5;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .step.active {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        .step-num {
+            width: 30px;
+            height: 30px;
+            background: #eee;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .step.active .step-num {
+            background: var(--primary);
+            color: white;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+
+        /* DRAG DROP */
+        .upload-zone {
+            border: 2px dashed #ccc;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            background: #f8fafc;
+            margin-bottom: 2rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--primary);
+            background: #eef2ff;
+        }
+
+        .status-legend {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin: 2px;
+        }
+
+        .context-menu {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 8px;
+            z-index: 1000;
+            width: 140px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .menu-btn {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 8px 10px;
+            text-align: left;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.1s;
+            width: 100%;
+            margin-bottom: 4px;
+        }
+
+        .menu-btn:hover {
+            background: #eef2ff;
+            transform: translateX(2px);
+        }
+
+        .menu-header {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 5px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 4px;
+        }
+
+        /* INPUT OVERRIDES */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .info-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-group label {
+            font-size: 0.8rem;
+            color: #666;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .info-group input,
+        .info-group select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .info-group input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar injected via JS -->
+
+        <div class="main-content">
+
+            <!-- Wizard Headers -->
+            <div class="wizard-header">
+                <div class="step active" onclick="setStep(1)" id="step-1-btn">
+                    <div class="step-num">1</div>
+                    <div class="step-title">Kimlik & Ruhsat</div>
+                </div>
+                <div class="step" onclick="setStep(2)" id="step-2-btn">
+                    <div class="step-num">2</div>
+                    <div class="step-title">Ekspertiz & SonuÃ§</div>
+                </div>
+            </div>
+
+            <div class="report-paper">
+                <!-- STEP 1: IDENTITY -->
+                <div id="step-1" class="wizard-step">
+
+                    <!-- Drag & Drop Zone -->
+                    <div class="upload-zone" id="dropZone">
+                        <i class="fas fa-cloud-upload-alt fa-3x" style="color:var(--primary); margin-bottom:10px;"></i>
+                        <h3 style="margin:0;">Ruhsat FotoÄŸrafÄ±</h3>
+                        <p style="color:#666; font-size:0.9rem;">(YÃ¼klemek iÃ§in tÄ±klayÄ±n)</p>
+                        <input type="file" id="ocrInput" hidden accept="image/*,application/pdf"
+                            onchange="performOCR(this.files[0])">
+                        <div id="ocrLoader" class="hidden"
+                            style="margin-top:10px; color:var(--primary); font-weight:bold;">
+                            <i class="fas fa-spinner fa-spin"></i> Okunuyor...
+                        </div>
+                    </div>
+
+                    <div class="section-title">ARAÃ‡ KÄ°MLÄ°ÄÄ°</div>
+                    <div class="info-grid">
+                        <div class="info-group">
+                            <label>PLAKA</label>
+                            <input type="text" id="plaka"
+                                style="font-weight:800; font-size:1.2rem; color:var(--primary);">
+                        </div>
+                        <div class="info-group">
+                            <label>MÃœÅTERÄ°</label>
+                            <input type="text" id="adSoyad">
+                        </div>
+                        <div class="info-group">
+                            <label>KM</label>
+                            <input type="text" id="km" oninput="formatKM(this)" placeholder="Ã–rn: 100.000">
+                        </div>
+                        <div class="info-group">
+                            <label>YIL</label>
+                            <input type="number" id="yil">
+                        </div>
+
+                        <div class="info-group">
+                            <label>MARKA</label>
+                            <input type="text" id="marka">
+                        </div>
+                        <div class="info-group">
+                            <label>MODEL</label>
+                            <input type="text" id="model">
+                        </div>
+                        <div class="info-group">
+                            <label>PAKET</label>
+                            <input type="text" id="paket">
+                        </div>
+                        <div class="info-group">
+                            <label>RENK</label>
+                            <input type="text" id="renk">
+                        </div>
+                        <div class="info-group">
+                            <label>TRAMER</label>
+                            <div style="display:flex; gap:5px;">
+                                <input type="number" id="tramer" style="flex:1;">
+                                <button type="button" class="btn btn-outline" onclick="sendSms5664()" title="5664">
+                                    <i class="fas fa-sms"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="info-group">
+                            <label>VÄ°TES</label>
+                            <select id="vites">
+                                <option>Manuel</option>
+                                <option>Otomatik</option>
+                                <option>YarÄ± Otomatik</option>
+                            </select>
+                        </div>
+                        <div class="info-group">
+                            <label>YAKIT</label>
+                            <select id="yakit">
+                                <option>Dizel</option>
+                                <option>Benzin</option>
+                                <option>Benzin & LPG</option>
+                                <option>Hibrit</option>
+                                <option>Elektrik</option>
+                            </select>
+                        </div>
+                        <div class="info-group">
+                            <label>KASA</label>
+                            <select id="kasa" onchange="loadVisuals(this.value)">
+                                <option value="Sedan">Sedan</option>
+                                <option value="Hatchback">Hatchback</option>
+                                <option value="SUV">SUV</option>
+                                <option value="Panelvan">Panelvan</option>
+                            </select>
+                        </div>
+                        <!-- New Fields -->
+                        <div class="info-group">
+                            <label>ÅASÄ° NO</label>
+                            <input type="text" id="sasi" maxlength="17">
+                        </div>
+                        <div class="info-group">
+                            <label>MOTOR NO</label>
+                            <input type="text" id="motor">
+                        </div>
+                        <!-- Danisman Selection -->
+                        <div class="info-group">
+                            <label>DANIÅMAN</label>
+                            <select id="danismanSelect">
+                                <option value="" disabled selected>SeÃ§iniz</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Hidden Inputs for logic compatibility -->
+                    <input type="hidden" id="cc">
+                    <input type="hidden" id="kw">
+
+                    <div style="display:flex; justify-content:flex-end; margin-top:30px;">
+                        <button class="btn btn-primary" onclick="setStep(2)">
+                            Ä°leri <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: INSPECTION & RESULT (Merged) -->
+                <div id="step-2" class="wizard-step hidden">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <div class="section-title" style="margin:0;">KAPORTA KONTROLÃœ</div>
+                        <div id="schemaTools" style="display:flex; gap:5px;">
+                            <button class="btn btn-sm btn-outline" onclick="toggleDrawingMode()">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline" onclick="resetSchema()">
+                                <i class="fas fa-undo"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Visual Editor -->
+                    <div id="visualEditor" class="visuals-container" style="position:relative;">
+                        <svg viewBox="0 0 800 500" class="car-svg" id="mainSvg"></svg>
+                    </div>
+
+                    <!-- LEGEND -->
+                    <!-- LEGEND -->
+                    <div class="legend-bar"
+                        style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; font-size:0.8rem;">
+                        <span class="status-legend" style="border-left:4px solid white;">Orjinal</span>
+                        <span class="status-legend" style="border-left:4px solid #f59e0b;">BoyalÄ± (B)</span>
+                        <span class="status-legend" style="border-left:4px solid #ef4444;">DeÄŸiÅŸen (X)</span>
+                        <span class="status-legend" style="border-left:4px solid #3b82f6;">Lokal (L)</span>
+                        <span class="status-legend" style="border-left:4px solid #8b5cf6;">SÃ¶k Tak (S)</span>
+                        <span class="status-legend" style="border-left:4px solid #cbd5e1;">Plastik (P)</span>
+                    </div>
+
+                    <!-- EXPERT NOTES (The Paper Lines) -->
+                    <div style="margin-top:20px;">
+                        <label class="section-title">EKSPER NOTLARI</label>
+                        <textarea id="notes" class="notes-area paper-lines"
+                            placeholder="AraÃ§ durumu hakkÄ±nda notlar..."></textarea>
+                    </div>
+
+                    <!-- PRICING & RESULT (Moved from Step 3) -->
+                    <div style="margin-top:20px; border-top:2px dashed #eee; padding-top:20px;">
+                        <div class="section-title">FÄ°YAT VE SONUÃ‡</div>
+                        <div class="info-grid">
+                            <div class="info-group">
+                                <label>TAKAS ALIM (TL)</label>
+                                <div style="display:flex; gap:10px; align-items:center;">
+                                    <input type="number" id="fiyatAlim" onchange="calculateValuation()"
+                                        style="font-size:1.1rem; font-weight:bold;">
+                                    <button class="btn btn-sm btn-secondary" onclick="calculateValuation()"
+                                        type="button"><i class="fas fa-calculator"></i></button>
+                                </div>
+                                <div id="valuationResult" class="hidden"></div>
+                            </div>
+                            <div class="info-group">
+                                <label>REVÄ°ZE / SATIÅ (TL)</label>
+                                <input type="number" id="fiyatSat"
+                                    style="font-size:1.5rem; color:var(--success); font-weight:bold;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ACTIONS -->
+                    <div style="display:flex; justify-content:space-between; margin-top:30px; margin-bottom:50px;">
+                        <button class="btn btn-outline" onclick="setStep(1)"><i class="fas fa-arrow-left"></i>
+                            Geri</button>
+                        <button class="btn btn-primary" onclick="saveReport()"
+                            style="padding:15px 40px; font-size:1.1rem;">
+                            <i class="fas fa-save"></i> KAYDET VE BÄ°TÄ°R
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    </div>
+
+    <!-- Context Menu for Part Status -->
+    <div id="contextMenu" class="context-menu" style="display:none;">
+        <div class="menu-header">Durum SeÃ§iniz</div>
+        <div class="menu-grid">
+            <button class="menu-btn" onclick="applyStatus('Orjinal')"
+                style="border-left: 4px solid white;">Orjinal</button>
+            <button class="menu-btn" onclick="applyStatus('BoyalÄ±')"
+                style="border-left: 4px solid #f59e0b;">BoyalÄ±</button>
+            <button class="menu-btn" onclick="applyStatus('DeÄŸiÅŸen')"
+                style="border-left: 4px solid #ef4444;">DeÄŸiÅŸen</button>
+            <button class="menu-btn" onclick="applyStatus('Lokal BoyalÄ±')"
+                style="border-left: 4px solid #3b82f6;">Lokal</button>
+            <button class="menu-btn" onclick="applyStatus('SÃ¶k Tak')" style="border-left: 4px solid #8b5cf6;">SÃ¶k
+                Tak</button>
+            <button class="menu-btn" onclick="applyStatus('Plastik')"
+                style="border-left: 4px solid #cbd5e1;">Plastik</button>
+            <div style="border-top:1px solid #eee; margin:5px 0;"></div>
+            <!-- Removed Photo Upload -->
+        </div>
+    </div>
+
+    <!-- Hidden Inputs -->
+    <!-- Removed Part Photo Input -->
+
+    <script src="js/carSchemas.js"></script>
+    <script src="js/car-render.js"></script>
+    <script src="js/draw-canvas.js"></script>
+    <script src="js/report-wizard.js"></script>
+    <script src="js/speech-recognition.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        function formatKM(input) {
+            // Remove non-digits
+            let val = input.value.replace(/\D/g, '');
+            if (val === '') {
+                input.value = '';
+                return;
+            }
+            // Format with dots
+            input.value = new Intl.NumberFormat('tr-TR').format(parseInt(val));
+        }
+    </script>
+    <!-- Smart Navigation FAB -->
+    <script src="js/nav-fab.js"></script>
+</body>
+
+</html>Ú *cascade08Úü*cascade08ü… *cascade08…†*cascade08† *cascade08“*cascade08“¼) *cascade08¼)½)*cascade08½)¾) *cascade08¾)¿)*cascade08¿)Â) *cascade08Â)Ä)*cascade08Ä)ó- *cascade08ó-ù-*cascade08ù-š1 *cascade08š1œ1*cascade08œ1Ï5 *cascade08Ï5Ï5*cascade08Ï5Ë7 *cascade08Ë7Ì7*cascade08Ì7Í7 *cascade08Í7Ï7*cascade08Ï7×7 *cascade08×7Œ8*cascade08Œ8Å= *cascade08Å=…? *cascade08…?É@ *cascade08É@É@*cascade08É@áD *cascade08áDâD*cascade08âDäD *cascade08äDçD*cascade08çDE *cascade08EE*cascade08EE *cascade08E‘E*cascade08‘E’E *cascade08’E“E*cascade08“E™E *cascade08™EE*cascade08EÉE *cascade08ÉEËE*cascade08ËEÍE *cascade08ÍEÎE*cascade08ÎEÒE *cascade08ÒEÓE*cascade08ÓE×E *cascade08×EØE*cascade08ØEüE *cascade08üEÿE*cascade08ÿE€F *cascade08€FF*cascade08F‚F *cascade08‚F…F*cascade08…F†F *cascade08†F‡F*cascade08‡FˆF *cascade08ˆF‰F*cascade08‰FŠF *cascade08ŠFF*cascade08FF *cascade08F“F*cascade08“F·F *cascade08·F¸F*cascade08¸FºF *cascade08ºFÃF*cascade08ÃFÄF *cascade08ÄFÅF*cascade08ÅFÆF *cascade08ÆFÉF*cascade08ÉFËF *cascade08ËFÌF*cascade08ÌFÎF *cascade08ÎFÑF*cascade08ÑFÓF *cascade08ÓFÔF*cascade08ÔFõF *cascade08õFöF*cascade08öFùF *cascade08ùFúF*cascade08úFÛH *cascade08ÛHÜH*cascade08ÜHŞH *cascade08ŞHàH*cascade08àH’I *cascade08’I”I*cascade08”I•I *cascade08•I–I*cascade08–I˜I *cascade08˜I™I*cascade08™IÒI *cascade08ÒIØI*cascade08ØIóK *cascade08óKõK*cascade08õKöK *cascade08öK÷K*cascade08÷K©L *cascade08©L¾L*cascade08¾L¿L *cascade08¿LÅL*cascade08ÅLÆL *cascade08ÆLÈL*cascade08ÈLÉL *cascade08ÉLÌL*cascade08ÌLÍL *cascade08ÍLÎL*cascade08ÎLÏL *cascade08ÏLĞL*cascade08ĞLƒM *cascade08ƒMˆM*cascade08ˆMŒM *cascade08ŒMM*cascade08MÉM *cascade08ÉMËM*cascade08ËMÌM *cascade08ÌMÏM*cascade08ÏMĞM *cascade08ĞMÑM*cascade08ÑMÔM *cascade08ÔMÖM*cascade08ÖM×M *cascade08×MÚM*cascade08ÚMÛM *cascade08ÛMÜM*cascade08ÜM—N *cascade08—NšN*cascade08šNœN *cascade08œNŸN*cascade08ŸNªN *cascade08ªN®N*cascade08®NËN *cascade08ËNÜN*cascade08ÜNŞN *cascade08ŞNæN*cascade08æNçN *cascade08çNïN*cascade08ïNğN *cascade08ğNóN*cascade08óNO *cascade08O’O*cascade08’O”O *cascade08”OšO*cascade08šO¶O *cascade08¶O·O*cascade08·OÖO *cascade08ÖOÙO*cascade08ÙOÛO *cascade08ÛOİO*cascade08İOŞO *cascade08ŞOàO*cascade08àOâO *cascade08âOçO*cascade08çO„P *cascade08„PŒP*cascade08ŒPP *cascade08P—P*cascade08—P¹P *cascade08¹PºP*cascade08ºP»P *cascade08»P½P*cascade08½P¿P *cascade08¿PÂP*cascade08ÂPÃP *cascade08ÃPÈP*cascade08ÈPÊP *cascade08ÊPÏP*cascade08ÏPïP *cascade08ïPüP*cascade08üPıP *cascade08ıPQ*cascade08QQ *cascade08Q’Q*cascade08’Q“Q *cascade08“Q™Q*cascade08™QëQ *cascade08ëQìQ*cascade08ìQŠR *cascade08ŠR‹R*cascade08‹RR *cascade08RR*cascade08RR *cascade08R–R*cascade08–R—R *cascade08—R›R*cascade08›RœR *cascade08œRR*cascade08RÀR *cascade08ÀRÅR*cascade08ÅRÈR *cascade08ÈRÉR*cascade08ÉRÍR *cascade08ÍRÎR*cascade08ÎRÏR *cascade08ÏRĞR*cascade08ĞRÒR *cascade08ÒRÜR*cascade08ÜRøR *cascade08øRùR*cascade08ùR˜S *cascade08˜SŸS*cascade08ŸS S *cascade08 S£S*cascade08£S¥S *cascade08¥S¦S*cascade08¦S§S *cascade08§S¨S*cascade08¨SªS *cascade08ªS«S*cascade08«S¯S *cascade08¯S°S*cascade08°SÌS *cascade08ÌSĞS*cascade08ĞSÑS *cascade08ÑSÛS*cascade08ÛSÜS *cascade08ÜSŞS*cascade08ŞSàS *cascade08àSäS*cascade08äSƒT *cascade08ƒT“T*cascade08“T”T *cascade08”T™T*cascade08™TºT *cascade08ºT»T*cascade08»T½T *cascade08½TÂT*cascade08ÂTÅT *cascade08ÅTÇT*cascade08ÇTÉT *cascade08ÉTÊT*cascade08ÊTËT *cascade08ËTÍT*cascade08ÍT÷T *cascade08÷TúT*cascade08úTûT *cascade08ûTüT*cascade08üTıT *cascade08ıTU*cascade08U‡U *cascade08‡UˆU*cascade08ˆU‰U *cascade08‰UU*cascade08UU *cascade08U‘U*cascade08‘U’U *cascade08’U“U*cascade08“U˜U *cascade08˜UU*cascade08U U *cascade08 U¤U*cascade08¤U¥U *cascade08¥U¦U*cascade08¦U§U *cascade08§UªU*cascade08ªUÊU *cascade08ÊUĞU*cascade08ĞUìU *cascade08ìUíU*cascade08íU‡V *cascade08‡V‘V*cascade08‘VV *cascade08V¥V*cascade08¥V¦V *cascade08¦V«V*cascade08«V¬V *cascade08¬V²V*cascade08²V¶V *cascade08¶V·V*cascade08·V¸V *cascade08¸V¹V*cascade08¹VºV *cascade08ºV»V*cascade08»V¼V *cascade08¼V¿V*cascade08¿VÁV *cascade08ÁVÂV*cascade08ÂVÃV *cascade08ÃVÆV*cascade08ÆVÈV *cascade08ÈVËV*cascade08ËVÎV *cascade08ÎVÏV*cascade08ÏVĞV *cascade08ĞVÑV*cascade08ÑVëV *cascade08ëVïV*cascade08ïVğV *cascade08ğVıV*cascade08ıVşV *cascade08şVÿV*cascade08ÿV€W *cascade08€W…W*cascade08…WW *cascade08W«W*cascade08«W¬W *cascade08¬W±W*cascade08±W²W *cascade08²W¸W*cascade08¸WİW *cascade08İWçW*cascade08çWéW *cascade08éWîW*cascade08îWğW *cascade08ğWøW*cascade08øWúW *cascade08úWƒX*cascade08ƒXX *cascade08X‘X*cascade08‘X„Y *cascade08„YŠY*cascade08ŠY‹Y *cascade08‹YY*cascade08Y­Y *cascade08­YÇY*cascade08ÇY¥Z *cascade08¥Z¨Z*cascade08¨ZªZ *cascade08ªZ«Z*cascade08«Z­Z *cascade08­Z³Z*cascade08³Z´Z *cascade08´ZÁZ*cascade08ÁZõ[ *cascade08õ[ö[*cascade08ö[ˆ] *cascade08ˆ]¢] *cascade08¢]£]*cascade08£]§] *cascade08§]¨] *cascade08¨]ü] *cascade08ü]€^*cascade08€^^ *cascade08^‚^*cascade08‚^ƒ^ *cascade08ƒ^„^*cascade08„^…^ *cascade08…^‡^*cascade08‡^À^ *cascade08À^Á^*cascade08Á^ˆ_ *cascade08ˆ__ *cascade08__*cascade08_’_ *cascade08’_“_*cascade08“_”_ *cascade08”_•_*cascade08•_—_ *cascade08—_›_*cascade08›__ *cascade08_ _*cascade08 _¡_ *cascade08¡_¤_*cascade08¤_¦_ *cascade08¦_§_*cascade08§_«_ *cascade08«_¬_*cascade08¬_µ_ *cascade08µ_¶_*cascade08¶_¹_ *cascade08¹_º_*cascade08º_¼_ *cascade08¼_½_*cascade08½_¾_ *cascade08¾_¿_*cascade08¿_Á_ *cascade08Á_Â_*cascade08Â_Å_ *cascade08Å_Æ_*cascade08Æ_Ê_ *cascade08Ê_Ë_*cascade08Ë_ğ_ *cascade08ğ_ò_*cascade08ò_ó_ *cascade08ó_õ_*cascade08õ_÷_ *cascade08÷_ü_*cascade08ü_ı_ *cascade08ı_ÿ_*cascade08ÿ_€` *cascade08€`‚`*cascade08‚`§` *cascade08§`©`*cascade08©`Ë` *cascade08Ë`Ì`*cascade08Ì`Í` *cascade08Í`Î`*cascade08Î`æ` *cascade08æ`è`*cascade08è`ë` *cascade08ë`í`*cascade08í`ƒa *cascade08ƒa‡a*cascade08‡aˆa *cascade08ˆaŠa*cascade08Ša‹a *cascade08‹aa*cascade08aa *cascade08a’a*cascade08’a“a *cascade08“a˜a*cascade08˜a¯a *cascade08¯a´a *cascade08´a¿a*cascade08¿aÁa *cascade08ÁaÅa*cascade08Åaça *cascade08çaèa*cascade08èaéa *cascade08éaêa*cascade08êaîa *cascade08îağa*cascade08ğaòa *cascade08òaóa*cascade08óaôa *cascade08ôaõa*cascade08õaöa *cascade08öaøa*cascade08øaÍb *cascade08ÍbÓb*cascade08Óbêb *cascade08êbîb*cascade08îbïb *cascade08ïbñb*cascade08ñb‡c *cascade08‡c‹c*cascade08‹cŒc *cascade08Œc’c*cascade08’c“c *cascade08“c•c*cascade08•c­c *cascade08
+­c³c ³c´c*cascade08
+´cµc µc·c*cascade08
+·cÒc ÒcÕc *cascade08Õcßc *cascade08ßcàc*cascade08àcâc *cascade08âcåc*cascade08åcèc *cascade08ècşc *cascade08şcd*cascade08d‚d *cascade08‚dƒd *cascade08ƒd‡d*cascade08‡d‰d *cascade08‰dŠd*cascade08Šd‹d *cascade08‹dd*cascade08dd *cascade08dd*cascade08d’d *cascade08’d™d*cascade08™dšd *cascade08šdd*cascade08d d *cascade08 d¢d*cascade08¢d£d *cascade08£d©d*cascade08©dªd *cascade08ªd±d*cascade08±d³d *cascade08³d¶d*cascade08¶d·d *cascade08·d¾d*cascade08¾dÀd *cascade08ÀdÃd*cascade08ÃdÆd *cascade08ÆdÈd*cascade08ÈdÉd *cascade08ÉdÊd*cascade08ÊdËd *cascade08ËdÏd*cascade08ÏdÑd *cascade08ÑdÔd*cascade08Ôdğd *cascade08ğdód *cascade08ódôd*cascade08ôd‚e *cascade08‚e‡e*cascade08‡eˆe *cascade08ˆe‰e*cascade08‰e“e *cascade08
+“e”e ”e•e *cascade08•e–e*cascade08–e—e *cascade08—e˜e*cascade08˜ee*cascade08ee *cascade08eŸe*cascade08Ÿe¨e *cascade08¨eªe*cascade08ªe«e *cascade08«e¬e*cascade08¬e­e *cascade08­e®e*cascade08®e¹e *cascade08¹e½e*cascade08½eÖe *cascade08ÖeØe *cascade08ØeÙe *cascade08Ùeİe*cascade08İeëe *cascade08ëeìe*cascade08ìeíe *cascade08íeòe*cascade08òeüe *cascade08
+üeıe ıeşe *cascade08şeÿe*cascade08ÿe€f *cascade08€ff*cascade08f†f*cascade08†f‡f *cascade08‡fˆf*cascade08ˆf›f *cascade08›ff*cascade08f f *cascade08 f¤f*cascade08¤f¥f *cascade08¥f¦f*cascade08¦f¨f *cascade08¨f¬f*cascade08¬fÄf *cascade08ÄfÇf *cascade08ÇfÈf *cascade08ÈfÌf*cascade08ÌfÚf *cascade08ÚfÜf*cascade08Üfİf *cascade08İfŞf*cascade08Şfàf *cascade08àfáf*cascade08áfìf *cascade08ìfíf*cascade08ífîf *cascade08
+îfïf ïfğf *cascade08ğfòf*cascade08òfóf *cascade08ófõf*cascade08õföf *cascade08öf÷f*cascade08÷f“g *cascade08“g”g *cascade08”g—g*cascade08—g™g *cascade08™gg*cascade08g¶g *cascade08¶g¸g *cascade08¸g¹g *cascade08¹g½g*cascade08½gËg *cascade08ËgÌg*cascade08ÌgÍg *cascade08ÍgÒg*cascade08ÒgÜg *cascade08
+Ügİg İgŞg *cascade08Şgßg*cascade08ßgàg *cascade08àgág*cascade08ágæg*cascade08ægçg *cascade08çgèg*cascade08ègøg *cascade08
+øgùg ùgûg *cascade08ûgşg*cascade08şg€h *cascade08€h‚h*cascade08‚hƒh *cascade08ƒh„h*cascade08„h†h *cascade08†hŠh*cascade08Šhh *cascade08hh*cascade08h¦h *cascade08¦hªh*cascade08ªh¸h *cascade08¸h¿h*cascade08
+¿hÀh ÀhÉh *cascade08
+ÉhÊh ÊhËh*cascade08ËhÍh *cascade08ÍhĞh*cascade08ĞhÒh *cascade08ÒhÓh*cascade08ÓhÔh *cascade08ÔhÕh*cascade08Õhèh *cascade08èhìh*cascade08ìhíh *cascade08íhîh*cascade08îhïh *cascade08ïhğh*cascade08ğhñh *cascade08ñhòh*cascade08òhóh *cascade08óhôh*cascade08ôhöh *cascade08öhúh*cascade08úh‘i *cascade08‘i•i*cascade08•i–i *cascade08–iši*cascade08ši¨i *cascade08¨i©i*cascade08©iªi *cascade08ªi¯i*cascade08¯i¾i *cascade08¾iÃi*cascade08ÃiÄi *cascade08ÄiÅi*cascade08ÅiÏi *cascade08ÏiĞi*cascade08
+ĞiÑi ÑiÒi*cascade08
+ÒiÓi ÓiÕi*cascade08
+ÕiØi ØiÚi*cascade08
+Úiİi İiŞi *cascade08Şiái*cascade08áiâi *cascade08âiãi*cascade08ãiéi *cascade08éi†j *cascade08†jˆj*cascade08ˆjŸj *cascade08Ÿj j*cascade08 j£j *cascade08£j¥j*cascade08¥j¦j *cascade08¦j©j*cascade08©jªj *cascade08ªj¯j*cascade08¯j°j *cascade08°j³j*cascade08³jµj *cascade08µj¶j*cascade08¶j·j *cascade08·j¸j*cascade08¸j¹j *cascade08¹jºj*cascade08ºj»j *cascade08»j¼j*cascade08¼j½j *cascade08½jÁj*cascade08ÁjÂj *cascade08ÂjÄj*cascade08Äjòj *cascade08òjój*cascade08ój¢k *cascade08¢k¦k*cascade08¦k§k *cascade08§k¨k*cascade08¨k©k *cascade08©k¬k*cascade08¬k°k *cascade08°k¶k*cascade08¶k·k *cascade08·k¾k*cascade08¾kÀk *cascade08ÀkÂk*cascade08ÂkÃk *cascade08ÃkÅk*cascade08Åkâk *cascade08âkäk*cascade08äkåk *cascade08åkîk*cascade08îkïk *cascade08ïkôk*cascade08ôkık *cascade08ıkşk*cascade08şkÿk *cascade08ÿkl*cascade08l‚l *cascade08‚lƒl*cascade08ƒl„l *cascade08„l…l*cascade08…l†l *cascade08†l‹l*cascade08‹lŒl *cascade08Œll*cascade08ll *cascade08l‘l*cascade08‘l±l *cascade08±l´l*cascade08´lµl *cascade08µl¸l*cascade08¸l¹l *cascade08¹l¼l*cascade08¼l¾l *cascade08¾lÀl*cascade08ÀlÁl *cascade08ÁlÊl*cascade08ÊlËl *cascade08ËlÌl*cascade08ÌlÍl *cascade08ÍlÓl*cascade08ÓlÔl *cascade08ÔlÖl*cascade08ÖlØl *cascade08ØlŞl*cascade08Şlãl *cascade08ãlål*cascade08ålæl *cascade08ælêl*cascade08êl‰m *cascade08‰m‹m*cascade08‹m¬m *cascade08¬mÉm*cascade08ÉmÎm *cascade08ÎmÑm*cascade08Ñmám *cascade08ámâm*cascade08âmém *cascade08émëm*cascade08ëmìm *cascade08ìmím*cascade08ímîm *cascade08îmïm*cascade08ïmğm *cascade08ğmòm*cascade08òmóm *cascade08ómn*cascade08nƒn *cascade08ƒn…n*cascade08…n‡n *cascade08‡n‹n*cascade08‹nŒn *cascade08Œnn*cascade08nn *cascade08n‘n*cascade08‘n’n *cascade08’n“n*cascade08“n”n *cascade08”n–n*cascade08–n—n *cascade08—n n*cascade08 n¡n *cascade08¡n¬n*cascade08¬n°n *cascade08°n´n*cascade08´nín *cascade08ínîn*cascade08înğn *cascade08ğnón*cascade08ónûn *cascade08ûnÿn*cascade08ÿn¬o *cascade08¬o®o*cascade08®oÆo *cascade08ÆoÈo*cascade08Èoşo *cascade08şo‚p*cascade08‚p¾p *cascade08¾p¡q*cascade08¡qÄq *cascade08Äqäq*cascade08äqæq *cascade08æqîq*cascade08îq¡r *cascade08¡r¢r*cascade08¢r¸r *cascade08¸r¼r*cascade08¼r½r *cascade08½rår*cascade08årær *cascade08ærér*cascade08érêr *cascade08êrs*cascade08s‚s *cascade08‚s…s*cascade08…s†s *cascade08†sŸs*cascade08Ÿs s *cascade08 s¤s*cascade08¤s¥s *cascade08¥sÓs*cascade08ÓsÔs *cascade08Ôsàs*cascade08àsás *cascade08ásäs*cascade08äsås *cascade08åsùs*cascade08ùsüs *cascade08üs‰t*cascade08‰t‹t *cascade08‹t±t*cascade08±t³t *cascade08³tµt*cascade08µtÑt *cascade08ÑtÓt*cascade08Ótœu *cascade08œu u*cascade08 u¨u *cascade08¨u«u*cascade08«uÃu *cascade08ÃuÄu*cascade08ÄuŞu *cascade08Şuâu*cascade08âu¤v *cascade08¤v¨v*cascade08¨vŒw *cascade08Œw¤w*cascade08¤w¥w *cascade08¥wºw*cascade08ºw»w *cascade08»wĞw*cascade08ĞwÖw *cascade08ÖwØw*cascade08Øwíw *cascade08íwîw*cascade08îwx *cascade08xx*cascade08xx *cascade08x‘x*cascade08‘x©x *cascade08©xªx*cascade08ªx«x *cascade08«x­x*cascade08­x®x *cascade08®x°x*cascade08°xÇx *cascade08ÇxÕx*cascade08Õxµy *cascade08µyÉy*cascade08Éy–z *cascade08–z—z*cascade08—z¹} *cascade08¹}»}*cascade08»}¿} *cascade08¿}Ë}*cascade08Ë}¥† *cascade08¥†ô† *cascade08ô†ö†*cascade08ö†ø† *cascade08ø†û†*cascade08û†ü† *cascade08ü†ı†*cascade08ı†ş† *cascade08ş†€‡*cascade08€‡…‡ *cascade08…‡†‡*cascade08†‡š‡ *cascade08š‡µ‡ *cascade08µ‡Ñ‡ *cascade08Ñ‡Ô‡*cascade08Ô‡Õ‡ *cascade08Õ‡Ö‡*cascade08Ö‡×‡ *cascade08×‡Ú‡*cascade08Ú‡Û‡ *cascade08Û‡Ü‡*cascade08Ü‡İ‡ *cascade08İ‡Ş‡*cascade08Ş‡á‡ *cascade08á‡â‡*cascade08â‡ç‡ *cascade08ç‡è‡*cascade08è‡î‡ *cascade08î‡ğ‡*cascade08ğ‡ú‡ *cascade08ú‡·ˆ *cascade08·ˆ¸ˆ*cascade08¸ˆ¹ˆ *cascade08
+¹ˆ½ˆ½ˆ¾ˆ *cascade08
+¾ˆÁˆÁˆÜˆ *cascade08Üˆåˆ *cascade08åˆêˆ*cascade08êˆìˆ *cascade08ìˆùˆ*cascade08ùˆúˆ *cascade08
+úˆ‰‰‰ *cascade08‰•‰*cascade08•‰–‰ *cascade08–‰˜‰*cascade08˜‰™‰ *cascade08™‰¡‰*cascade08¡‰Å‰ *cascade08Å‰šŠ šŠ• *cascade08
+•¸¸¾ *cascade08¾Ç ÇÊ*cascade08ÊË *cascade08ËÌ*cascade08ÌÍ *cascade08ÍÎ*cascade08Îğ *cascade082Efile:///c:/Users/Emmi/Documents/ekspertiz-node/public/yeni-rapor.html

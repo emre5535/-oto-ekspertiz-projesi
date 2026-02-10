@@ -1,0 +1,490 @@
+Ç²<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayarlar | Oto Ekspertiz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css?v=2"> <!-- New CSS -->
+    <style>
+        .tab-menu {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            font-weight: 600;
+            color: var(--text-light);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .editor-list {
+            list-style: none;
+        }
+
+        .editor-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            margin-bottom: 0.5rem;
+            border-radius: 0.25rem;
+        }
+
+        .log-window {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: monospace;
+            height: 150px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar injected -->
+
+        <div class="main-content">
+            <h1>Sistem AyarlarÄ±</h1>
+            <p class="mb-4" style="color: var(--text-light);">Uygulama yapÄ±landÄ±rmasÄ±nÄ± buradan yÃ¶netebilirsiniz.</p>
+
+            <div class="card">
+                <div class="tab-menu">
+                    <button class="tab-btn active" onclick="openTab('genel')">Genel</button>
+                    <button class="tab-btn" onclick="openTab('form')">Form DÃ¼zenleyici</button>
+                    <button class="tab-btn" onclick="openTab('kullanicilar')">KullanÄ±cÄ±lar</button>
+                    <button class="tab-btn" onclick="openTab('sablon')">Rapor Åablonu</button>
+                    <button class="tab-btn" onclick="openTab('ai')">Yapay Zeka <span
+                            class="badge badge-warning">Beta</span></button>
+                </div>
+
+                <!-- 1. GENEL AYARLAR -->
+                <div id="genel" class="tab-content active">
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Firma AdÄ±</label>
+                            <input type="text" id="companyName" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Telefon</label>
+                            <input type="text" id="companyPhone" class="form-control">
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label class="form-label">Adres</label>
+                            <textarea id="companyAddress" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Rapor BaÅŸlÄ±ÄŸÄ±</label>
+                            <input type="text" id="reportTitle" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Fiyat GÃ¶ster</label>
+                            <select id="reportShowPrice" class="form-control">
+                                <option value="true">Evet</option>
+                                <option value="false">HayÄ±r</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Logo Upload -->
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label class="form-label">Firma Logosu</label>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <img id="currentLogo" src="/uploads/logo.png"
+                                style="height: 50px; border: 1px solid var(--border); padding: 5px;">
+                            <input type="file" id="logoInput" class="form-control" accept="image/*">
+                            <button onclick="uploadLogo()" class="btn btn-outline">YÃ¼kle</button>
+                        </div>
+                    </div>
+                    <button onclick="saveSettings()" class="btn btn-primary" style="margin-top: 1rem;"><i
+                            class="fas fa-save"></i> Kaydet</button>
+                </div>
+
+                <!-- 2. FORM DÃœZENLEYÄ°CÄ° -->
+                <div id="form" class="tab-content">
+                    <h3>Marka Listesi</h3>
+                    <div class="flex-between" style="margin-bottom: 0.5rem;">
+                        <input type="text" id="newBrand" class="form-control" placeholder="Yeni Marka..."
+                            style="width: 70%;">
+                        <button onclick="addItem('brands', 'newBrand', 'brandList')" class="btn btn-success"><i
+                                class="fas fa-plus"></i> Ekle</button>
+                    </div>
+                    <ul id="brandList" class="editor-list"></ul>
+
+                    <h3 style="margin-top: 1.5rem;">Renk Listesi</h3>
+                    <div class="flex-between" style="margin-bottom: 0.5rem;">
+                        <input type="text" id="newColor" class="form-control" placeholder="Yeni Renk..."
+                            style="width: 70%;">
+                        <button onclick="addItem('colors', 'newColor', 'colorList')" class="btn btn-success"><i
+                                class="fas fa-plus"></i> Ekle</button>
+                    </div>
+                    <ul id="colorList" class="editor-list"></ul>
+                </div>
+
+                <!-- 3. KULLANICILAR -->
+                <div id="kullanicilar" class="tab-content">
+                    <div class="flex-between mb-2">
+                        <h3>Personel Listesi</h3>
+                        <button onclick="resetUserForm(); $('#userForm').classList.toggle('hidden')"
+                            class="btn btn-primary"><i class="fas fa-user-plus"></i> Yeni KullanÄ±cÄ±</button>
+                    </div>
+
+                    <div id="userForm" class="card hidden" style="background: #f1f5f9;">
+                        <div class="grid-2">
+                            <input type="text" id="uAd" class="form-control" placeholder="KullanÄ±cÄ± AdÄ±">
+                            <input type="password" id="uPass" class="form-control" placeholder="Åifre">
+                            <input type="text" id="uName" class="form-control" placeholder="Ad Soyad">
+                            <select id="uRole" class="form-control">
+                                <option value="Personel">Personel</option>
+                                <option value="DanÄ±ÅŸman">DanÄ±ÅŸman</option>
+                                <option value="Eksper">Eksper</option>
+                                <option value="Admin">Admin (YÃ¶netici)</option>
+                            </select>
+                        </div>
+                        <div style="margin-top: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <label><input type="checkbox" id="uCanDelete"> KayÄ±t Silme</label>
+                            <label><input type="checkbox" id="uCanEdit"> KayÄ±t DÃ¼zenleme</label>
+                            <label><input type="checkbox" id="uCanViewPrice"> Fiyat GÃ¶rme</label>
+                        </div>
+                        <small style="display:block; color:#666; margin-top:5px;">Admin rolÃ¼ her zaman tam
+                            yetkilidir.</small>
+                        <button onclick="saveUser()" class="btn btn-success mt-2">Kaydet</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Ad Soyad</th>
+                                    <th>KullanÄ±cÄ± AdÄ±</th>
+                                    <th>Rol</th>
+                                    <th>Yetkiler</th>
+                                    <th>Ä°ÅŸlem</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 4. AI ASÄ°STAN -->
+                <div id="ai" class="tab-content">
+                    <p>AI AsistanÄ± ile sistem ayarlarÄ±nÄ± konuÅŸarak yapabilirsiniz.</p>
+                    <div class="form-group">
+                        <textarea id="aiPrompt" class="form-control" rows="3"
+                            placeholder="Ã–rn: 'Rapor baÅŸlÄ±ÄŸÄ±nÄ± Ekspertiz Raporu olarak deÄŸiÅŸtir ve fiyatÄ± gizle.'"></textarea>
+                    </div>
+                    <button onclick="askAI()" class="btn btn-primary"><i class="fas fa-magic"></i> Uygula</button>
+                    <div id="aiLog" class="log-window hidden"></div>
+                </div>
+
+                <!-- 5. RAPOR ÅABLONU -->
+                <div id="sablon" class="tab-content">
+                    <h3>Rapor Åablon AyarlarÄ±</h3>
+                    <div class="grid-2">
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label class="form-label">Yasal UyarÄ± / Disclaimer (Footer)</label>
+                            <textarea id="reportDisclaimer" class="form-control" rows="4"
+                                placeholder="Rapor altÄ±ndaki yasal metin..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Alt Bilgi (Footer Sol)</label>
+                            <input type="text" id="reportFooterLeft" class="form-control"
+                                placeholder="Ã–rn: www.ekspertiz.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Alt Bilgi (Footer SaÄŸ)</label>
+                            <input type="text" id="reportFooterRight" class="form-control"
+                                placeholder="Ã–rn: +90 555 ...">
+                        </div>
+                    </div>
+                    <div style="margin-top:1rem; display:flex; gap:1rem;">
+                        <button onclick="saveSettings()" class="btn btn-primary"><i class="fas fa-save"></i>
+                            Kaydet</button>
+                        <!-- Preview Button: Opens a dummy report with current settings -->
+                        <button onclick="previewReport()" class="btn btn-outline"><i class="fas fa-file-pdf"></i> PDF
+                            Ã–nizleme</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        let currentSettings = {};
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadSettings();
+            await loadUsers();
+        });
+
+        function openTab(id) {
+            $$('.tab-content').forEach(el => el.classList.remove('active'));
+            $$('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function previewReport() {
+            // Open a generic report viewing page with dummy data
+            // We can reuse 'rapor-goruntule.html' but with a 'preview=true' flag
+            window.open('rapor-goruntule.html?preview=true', '_blank');
+        }
+
+        // --- SETTINGS LOGIC ---
+        async function loadSettings() {
+            try {
+                currentSettings = await apiRequest('settings');
+
+                // Ensure defaults
+                const defaults = {
+                    company: { name: '', phone: '', address: '', logo: '' },
+                    report: { title: 'Ekspertiz Raporu', showPrice: false, disclaimer: '' },
+                    form: { brands: [], colors: [] }
+                };
+
+                // Merge defaults
+                currentSettings = {
+                    ...defaults,
+                    ...currentSettings,
+                    company: { ...defaults.company, ...(currentSettings.company || {}) },
+                    report: { ...defaults.report, ...(currentSettings.report || {}) },
+                    form: { ...defaults.form, ...(currentSettings.form || {}) }
+                };
+
+                // Fill General
+                $('#companyName').value = currentSettings.company.name || '';
+                $('#companyPhone').value = currentSettings.company.phone || '';
+                $('#companyAddress').value = currentSettings.company.address || '';
+                $('#reportTitle').value = currentSettings.report.title || '';
+                $('#reportShowPrice').value = currentSettings.report.showPrice;
+                if (currentSettings.company.logo) $('#currentLogo').src = currentSettings.company.logo;
+
+                // Fill Report Config
+                $('#reportDisclaimer').value = currentSettings.report.disclaimer || '';
+                $('#reportFooterLeft').value = currentSettings.report.footerLeft || '';
+                $('#reportFooterRight').value = currentSettings.report.footerRight || '';
+
+                // Fill Lists
+                renderList('brandList', currentSettings.form.brands || [], 'brands');
+                renderList('colorList', currentSettings.form.colors || [], 'colors');
+            } catch (e) {
+                console.error("Settings Load Error:", e);
+                // Don't show toast on load error to avoid annoyance, just log
+            }
+        }
+
+        async function saveSettings() {
+            currentSettings.company.name = $('#companyName').value;
+            currentSettings.company.phone = $('#companyPhone').value;
+            currentSettings.company.address = $('#companyAddress').value;
+            currentSettings.report.title = $('#reportTitle').value;
+            currentSettings.report.showPrice = $('#reportShowPrice').value === 'true';
+
+            // Save Report Config
+            currentSettings.report.disclaimer = $('#reportDisclaimer').value;
+            currentSettings.report.footerLeft = $('#reportFooterLeft').value;
+            currentSettings.report.footerRight = $('#reportFooterRight').value;
+
+            try {
+                await apiRequest('settings', 'POST', currentSettings);
+                showToast('Ayarlar kaydedildi.');
+            } catch (e) { showToast('Hata oluÅŸtu', 'error'); }
+        }
+
+        async function uploadLogo() {
+            const file = $('#logoInput').files[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('logo', file);
+
+            try {
+                const res = await fetch('/upload-logo', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (data.success) {
+                    currentSettings.company.logo = data.url;
+                    $('#currentLogo').src = data.url;
+                    saveSettings(); // Save URL to settings
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // --- LIST EDITOR ---
+        function renderList(elId, items, type) {
+            const ul = document.getElementById(elId);
+            ul.innerHTML = '';
+            items.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = 'editor-item';
+                li.innerHTML = `
+                <span>${item}</span>
+                <button onclick="removeItem('${type}', ${index}, '${elId}')" class="btn btn-outline" style="color:red; padding:2px 8px;">&times;</button>
+            `;
+                ul.appendChild(li);
+            });
+        }
+
+        function addItem(type, inputId, listId) {
+            const val = document.getElementById(inputId).value.trim();
+            if (!val) return;
+            currentSettings.form[type].push(val);
+            document.getElementById(inputId).value = '';
+            renderList(listId, currentSettings.form[type], type);
+            saveSettings();
+        }
+
+        function removeItem(type, index, listId) {
+            currentSettings.form[type].splice(index, 1);
+            renderList(listId, currentSettings.form[type], type);
+            saveSettings();
+        }
+
+        // --- USER MANAGEMENT ---
+        async function loadUsers() {
+            try {
+                const users = await apiRequest('kullanicilar');
+                const tbody = document.getElementById('userTableBody');
+                tbody.innerHTML = '';
+                users.forEach(u => {
+                    // Safe stringify for passing to edit function
+                    const userStr = JSON.stringify(u).replace(/"/g, '&quot;');
+
+                    // Determine Role Label
+                    let roleLabel = u.role || (u.isAdmin ? 'Admin' : 'TanÄ±msÄ±z');
+                    let perms = [];
+                    if (u.isAdmin) perms.push('<span class="badge badge-warning">Tam Yetki</span>');
+                    if (u.canDelete && !u.isAdmin) perms.push('<span class="badge badge-danger">Silme</span>');
+                    if (perms.length === 0) perms.push('<span class="text-muted">-</span>');
+
+                    tbody.innerHTML += `
+                    <tr>
+                        <td data-label="Ad Soyad">${u.adSoyad || '-'}</td>
+                        <td data-label="KullanÄ±cÄ± AdÄ±">${u.kullaniciAdi}</td>
+                        <td data-label="Rol"><span class="badge badge-primary">${roleLabel}</span></td>
+                        <td data-label="Yetkiler">${perms.join(' ')}</td>
+                        <td data-label="Ä°ÅŸlem">
+                            <button onclick="editUser(${userStr})" class="btn btn-warning btn-sm" style="margin-right:5px;"><i class="fas fa-edit"></i></button>
+                            <button onclick="deleteUser('${u.id}')" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+                });
+            } catch (e) { }
+        }
+
+        let editingUserId = null;
+
+        function resetUserForm() {
+            editingUserId = null;
+            $('#uAd').value = '';
+            $('#uPass').value = '';
+            $('#uName').value = '';
+            $('#uRole').value = 'Personel';
+            $('#uCanDelete').checked = false;
+            $('#uCanEdit').checked = true;
+            $('#uCanViewPrice').checked = true;
+            document.querySelector('#userForm button').textContent = 'Kaydet';
+            document.querySelector('#userForm button').classList.remove('btn-warning');
+            document.querySelector('#userForm button').classList.add('btn-success');
+        }
+
+        function editUser(u) {
+            editingUserId = u.id;
+            $('#userForm').classList.remove('hidden');
+            $('#uAd').value = u.kullaniciAdi;
+            $('#uPass').value = ''; // Don't show password
+            $('#uPass').placeholder = 'BoÅŸ bÄ±rakÄ±lÄ±rsa deÄŸiÅŸmez';
+            $('#uName').value = u.adSoyad || '';
+            // Map legacy roles if needed
+            $('#uRole').value = u.role || (u.isAdmin ? 'Admin' : 'Personel');
+            $('#uCanDelete').checked = u.canDelete;
+            $('#uCanEdit').checked = u.canEdit !== false;
+            $('#uCanViewPrice').checked = u.canViewPrice !== false;
+
+            const btn = document.querySelector('#userForm button');
+            btn.textContent = 'GÃ¼ncelle';
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-warning');
+
+            // Scroll to form
+            document.getElementById('userForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function saveUser() {
+            const body = {
+                kullaniciAdi: $('#uAd').value,
+                sifre: $('#uPass').value,
+                adSoyad: $('#uName').value,
+                role: $('#uRole').value, // Changed from rol to role
+                canDelete: $('#uCanDelete').checked,
+                canEdit: $('#uCanEdit').checked,
+                canViewPrice: $('#uCanViewPrice').checked
+            };
+
+            if (editingUserId) {
+                // Update
+                await apiRequest(`kullanici/${editingUserId}`, 'PUT', body);
+            } else {
+                // Create
+                await apiRequest('kullanici-ekle', 'POST', body);
+            }
+
+            $('#userForm').classList.add('hidden');
+            resetUserForm();
+            loadUsers();
+        }
+
+        async function deleteUser(id) {
+            if (confirm('Silinsin mi?')) {
+                await apiRequest(`kullanici/${id}`, 'DELETE');
+                loadUsers();
+            }
+        }
+
+        // --- AI ASSIST ---
+        async function askAI() {
+            const prompt = $('#aiPrompt').value;
+            const log = $('#aiLog');
+            log.classList.remove('hidden');
+            log.innerHTML += `> ${prompt}\nProcessing...\n`;
+
+            try {
+                const res = await apiRequest('ai-assist', 'POST', { prompt });
+                log.innerHTML += `<span style="color:white;">System: ${res.response}</span>\n`;
+                loadSettings(); // Reload if AI changed something (mock)
+            } catch (e) {
+                log.innerHTML += `Error: ${e.message}\n`;
+            }
+        }
+    </script>
+</body>
+
+</html>N *cascade08Nššâ *cascade08â„*cascade08„ *cascade08*cascade08• *cascade08•›*cascade08›İ *cascade08İá*cascade08áø: *cascade08ø:‰;*cascade08‰;Š; *cascade08Š;«;*cascade08«;¬; *cascade08¬;Ä;*cascade08Ä;ã< *cascade08ã<ê<*cascade08ê<ó< *cascade08ó<ô<*cascade08ô<û= *cascade08û=¦>*cascade08¦>ÿ> *cascade08ÿ>€?*cascade08€?? *cascade08?‹?*cascade08‹?Œ? *cascade08Œ?«?*cascade08«?¬? *cascade08¬?³?*cascade08³?´? *cascade08´?¿?*cascade08¿?À? *cascade08À?Å?*cascade08Å?Æ? *cascade08Æ?Ï?*cascade08Ï?Ğ? *cascade08Ğ?å?*cascade08å?é? *cascade08é?ê? *cascade08
+ê?Œ@ Œ@ŒA*cascade08
+ŒAšA šA›A *cascade08›AA*cascade08AA *cascade08A³A *cascade08³AÃAÃAÈA *cascade08ÈAÉA *cascade08ÉAËA*cascade08ËAÌA *cascade08ÌAÍA*cascade08ÍAÎA *cascade08ÎAÖA*cascade08ÖA×A *cascade08×AÛA *cascade08ÛAİAİAŞA *cascade08ŞAøA *cascade08øA‡B‡B‰B *cascade08‰BBB•F *cascade08•F˜F*cascade08˜F¢d *cascade08¢dj*cascade08jµq *cascade08µq»q*cascade08»qŒr *cascade08Œr’r*cascade08’r¹r *cascade08¹rÊr*cascade08ÊrÙr *cascade08Ùrñr*cascade08ñrôr *cascade08ôrÑs*cascade08Ñsœ *cascade08œü*cascade08üÛ‘ *cascade08Û‘ñ‘*cascade08ñ‘§’ *cascade08§’Å’*cascade08Å’ù’ *cascade08ù’Š“*cascade08Š“‹“ *cascade08‹“­“*cascade08­“²“ *cascade08²“¸“*cascade08¸“¹“ *cascade08¹“À“*cascade08À“â“ *cascade08â“ô“ *cascade08ô“÷“*cascade08÷“ø“ *cascade08ø“û“ *cascade08û“ü“*cascade08ü“ı“ *cascade08ı“ÿ“*cascade08ÿ“€” *cascade08€”ƒ”*cascade08ƒ”„” *cascade08„”†”*cascade08†”‰” *cascade08‰”Š”*cascade08Š”­” *cascade08­”Â”*cascade08Â”÷™ *cascade08÷™ş™*cascade08ş™¾š *cascade08¾š››*cascade08››üŸ *cascade08üŸ§ *cascade08§ Ì  *cascade08Ì Í *cascade08Í Ñ  *cascade08Ñ Ó *cascade08Ó Ô  *cascade08Ô Û *cascade08Û Ü  *cascade08Ü ã *cascade08ã ä  *cascade08ä î *cascade08î ï  *cascade08ï ñ *cascade08ñ ò  *cascade08ò ó *cascade08ó «¡ *cascade08«¡«¢*cascade08«¢â¦ *cascade08â¦ã¦*cascade08ã¦÷¦ *cascade08÷¦“§*cascade08“§½§ *cascade08½§«¨*cascade08«¨Ç² *cascade082Bfile:///c:/Users/Emmi/Documents/ekspertiz-node/public/ayarlar.html

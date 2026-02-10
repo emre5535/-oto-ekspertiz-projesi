@@ -1,0 +1,403 @@
+‡o<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF YÃ¶netimi | Oto Ekspertiz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/main.js"></script>
+    <style>
+        .dropzone {
+            border: 2px dashed var(--border);
+            border-radius: 0.5rem;
+            padding: 3rem;
+            text-align: center;
+            background: var(--surface);
+            transition: all 0.3s;
+            cursor: pointer;
+            margin-bottom: 2rem;
+            color: var(--text);
+        }
+
+        .dropzone:hover,
+        .dropzone.dragover {
+            border-color: var(--primary);
+            background: var(--background);
+        }
+
+        .category-section {
+            margin-bottom: 2rem;
+        }
+
+        .category-header {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pdf-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .pdf-card {
+            background: var(--surface);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform 0.2s;
+            border: 1px solid var(--border);
+        }
+
+        .pdf-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        .pdf-icon {
+            font-size: 2rem;
+            color: var(--danger);
+        }
+
+        .pdf-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .pdf-name {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.25rem;
+            color: var(--text);
+        }
+
+        .pdf-meta {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .pdf-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .pdf-link {
+            text-decoration: none;
+            color: inherit;
+            transition: color 0.2s;
+        }
+
+        .pdf-link:hover {
+            text-decoration: underline;
+            color: var(--primary);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: var(--surface);
+            padding: 2rem;
+            border-radius: var(--radius);
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar injected by main.js -->
+
+        <div class="main-content">
+            <header class="flex-between" style="margin-bottom: 2rem;">
+                <div>
+                    <h1 style="font-size: 1.5rem; font-weight: 700;">PDF YÃ¶netimi</h1>
+                    <p style="color: var(--text-light);">Sisteme yÃ¼klenen belgeleri yÃ¶netin</p>
+                </div>
+            </header>
+
+            <!-- Upload Area -->
+            <div class="dropzone" id="dropzone">
+                <input type="file" id="fileInput" multiple accept=".pdf" style="display: none;">
+                <i class="fas fa-cloud-upload-alt fa-3x" style="color: var(--primary); margin-bottom: 1rem;"></i>
+                <h3 style="margin-bottom: 0.5rem; color: var(--text);">DosyalarÄ± buraya sÃ¼rÃ¼kleyin veya seÃ§in</h3>
+                <p style="color: var(--text-light);">Sadece PDF dosyalarÄ± kabul edilir</p>
+            </div>
+
+            <!-- Custom User Info/Status (Optional, can be removed) -->
+            <div id="uploadStatus" style="margin-bottom: 1rem; display: none;"></div>
+
+            <!-- List Area -->
+            <div class="flex-between" style="margin-bottom: 1rem;">
+                <h3>YÃ¼klÃ¼ Dosyalar</h3>
+                <button class="btn btn-outline btn-sm" onclick="loadPdfs()"><i class="fas fa-sync"></i> Yenile</button>
+            </div>
+
+            <div id="pdfContainer">
+                <!-- Sections Injected Here -->
+                <div style="text-align: center; padding: 2rem; color: var(--text-light);">YÃ¼kleniyor...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Selection Modal -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 1rem; color: var(--text);">Kategori SeÃ§in</h3>
+            <p style="margin-bottom: 1rem; color: var(--text-light);">YÃ¼klenen dosyalar hangi bÃ¶lÃ¼me kaydedilsin?</p>
+
+            <div class="form-group">
+                <select id="categorySelect" class="form-control" style="width: 100%; padding: 10px;">
+                    <option value="Takas AraÃ§ RuhsatÄ±">Takas AraÃ§ RuhsatÄ±</option>
+                    <option value="Vekaletname">Vekaletname</option>
+                    <option value="2.El Tarih GÃ¼ncelleme">2.El Tarih GÃ¼ncelleme</option>
+                </select>
+            </div>
+
+            <div class="flex-between" style="margin-top: 1.5rem;">
+                <button class="btn btn-outline" onclick="closeModal()">Ä°ptal</button>
+                <button class="btn btn-primary" onclick="proceedUpload()">YÃ¼kle</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPdfs();
+            initDropzone();
+        });
+
+        async function loadPdfs() {
+            const container = document.getElementById('pdfContainer');
+            container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-light);"><i class="fas fa-spinner fa-spin"></i> YÃ¼kleniyor...</div>';
+
+            try {
+                const pdfs = await apiRequest('pdfs');
+
+                if (pdfs.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-light);">HenÃ¼z hiÃ§ dosya yÃ¼klenmemiÅŸ.</div>';
+                    return;
+                }
+
+                // Group by Category
+                const groups = {
+                    "Takas AraÃ§ RuhsatÄ±": [],
+                    "Vekaletname": [],
+                    "2.El Tarih GÃ¼ncelleme": []
+                };
+
+                pdfs.forEach(pdf => {
+                    // Default to "2.El Tarih GÃ¼ncelleme" if null or unknown
+                    let cat = pdf.category;
+                    if (!cat || !groups[cat]) cat = "2.El Tarih GÃ¼ncelleme";
+                    groups[cat].push(pdf);
+                });
+
+                let html = '';
+
+                // Define order
+                const order = ["Takas AraÃ§ RuhsatÄ±", "Vekaletname", "2.El Tarih GÃ¼ncelleme"];
+
+                order.forEach(cat => {
+                    const list = groups[cat];
+                    html += `
+                        <div class="category-section">
+                            <div class="category-header">
+                                ${cat} 
+                                <span class="badge badge-primary" style="font-size: 0.8rem;">${list.length}</span>
+                            </div>
+                            <div class="pdf-list">
+                                ${list.length > 0 ? list.map(pdf => renderPdfCard(pdf)).join('') : '<div style="color:var(--text-light); font-style:italic;">Bu kategoride dosya yok.</div>'}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error("Load PDFs Error:", error);
+                container.innerHTML = '<div style="text-align: center; color: var(--danger);">Dosyalar yÃ¼klenirken bir hata oluÅŸtu.</div>';
+            }
+        }
+
+        function renderPdfCard(pdf) {
+            return `
+                <div class="pdf-card">
+                    <div class="pdf-icon">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <div class="pdf-info">
+                        <div class="pdf-name" title="${pdf.originalName}">
+                            <a href="${pdf.path}" target="_blank" class="pdf-link" download="${pdf.originalName}">
+                                ${pdf.originalName}
+                            </a>
+                        </div>
+                        <div class="pdf-meta">
+                            ${(pdf.size / 1024).toFixed(1)} KB â€¢ ${new Date(pdf.createdAt).toLocaleDateString()}
+                        </div>
+                    </div>
+                    <div class="pdf-actions">
+                        <a href="${pdf.path}" target="_blank" class="btn btn-outline" style="padding: 0.5rem;" title="GÃ¶rÃ¼ntÃ¼le">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <button onclick="deletePdf(${pdf.id})" class="btn btn-outline" style="padding: 0.5rem; color: var(--danger); border-color: var(--danger);" title="Sil">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Upload Flow
+        function openUploadModal(files) {
+            selectedFiles = files;
+            document.getElementById('categoryModal').classList.add('show');
+        }
+
+        function closeModal() {
+            selectedFiles = [];
+            document.getElementById('categoryModal').classList.remove('show');
+            document.getElementById('fileInput').value = ''; // Reset input
+        }
+
+        async function proceedUpload() {
+            const category = document.getElementById('categorySelect').value;
+            const files = selectedFiles;
+
+            closeModal(); // Close modal immediately
+
+            if (!files || files.length === 0) return;
+
+            const formData = new FormData();
+            let validCount = 0;
+
+            for (let i = 0; i < files.length; i++) {
+                if (files[i].type === 'application/pdf') {
+                    formData.append('files', files[i]);
+                    validCount++;
+                }
+            }
+
+            if (validCount === 0) {
+                showToast('LÃ¼tfen geÃ§erli PDF dosyalarÄ± seÃ§in.', 'error');
+                return;
+            }
+
+            // Append Category
+            formData.append('category', category);
+
+            const status = document.getElementById('uploadStatus');
+            status.style.display = 'block';
+            status.innerHTML = '<div class="alert alert-info">YÃ¼kleniyor...</div>';
+
+            try {
+                const res = await fetch('/api/pdfs', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    showToast(`${data.files.length} dosya baÅŸarÄ±yla yÃ¼klendi.`);
+                    loadPdfs();
+                    status.style.display = 'none';
+                } else {
+                    throw new Error(data.error || 'YÃ¼kleme baÅŸarÄ±sÄ±z');
+                }
+            } catch (error) {
+                console.error("Upload Error:", error);
+                showToast('YÃ¼kleme hatasÄ±: ' + error.message, 'error');
+                status.innerHTML = `<div class="alert alert-danger">Hata: ${error.message}</div>`;
+            }
+        }
+
+        // Triggered by Dropzone
+        function handleFilesSelection(files) {
+            if (files.length > 0) openUploadModal(files);
+        }
+
+        async function deletePdf(id) {
+            if (!confirm('Bu dosyayÄ± silmek istediÄŸinize emin misiniz?')) return;
+
+            try {
+                await apiRequest(`pdfs/${id}`, 'DELETE');
+                showToast('Dosya silindi.');
+                loadPdfs();
+            } catch (error) {
+                console.error("Delete Error:", error);
+                showToast('Silme hatasÄ±', 'error');
+            }
+        }
+
+        function initDropzone() {
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('fileInput');
+
+            dropzone.onclick = () => fileInput.click();
+
+            fileInput.onchange = (e) => {
+                handleFilesSelection(fileInput.files);
+            };
+
+            dropzone.ondragover = (e) => {
+                e.preventDefault();
+                dropzone.classList.add('dragover');
+            };
+
+            dropzone.ondragleave = (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('dragover');
+            };
+
+            dropzone.ondrop = (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('dragover');
+                handleFilesSelection(e.dataTransfer.files);
+            };
+        }
+    </script>
+</body>
+
+</html>Ğ *cascade08ĞÖ*cascade08Ö× *cascade08×Ù*cascade08ÙÛ *cascade08Ûİ*cascade08İÙ *cascade08Ùâ*cascade08âå *cascade08åç*cascade08çÍ *cascade08Íî*cascade08îö *cascade08öù*cascade08ùú *cascade08ú‹*cascade08‹Œ *cascade08Œ«*cascade08«¬ *cascade08¬ó	*cascade08ó	ô	 *cascade08ô	‹
+*cascade08‹
+Œ
+ *cascade08Œ
+Æ
+*cascade08Æ
+¦ *cascade08¦²*cascade08²³ *cascade08³´*cascade08´ *cascade08”*cascade08”• *cascade08•—*cascade08—˜ *cascade08˜›*cascade08› *cascade08Ì*cascade08Ì¦ *cascade08¦Ñ*cascade08Ñœ *cascade08œ¦*cascade08¦§ *cascade08§©*cascade08©Ğ *cascade08Ğñ*cascade08ñÆ *cascade08Æ×*cascade08×À *cascade08À½*cascade08½õ*cascade08õ³" *cascade08³"Ç"*cascade08Ç"›# *cascade08›#¬#*cascade08¬#¥% *cascade08¥%ª%*cascade08ª%Æ' *cascade08Æ'É'*cascade08É'Ê' *cascade08Ê'Ï'*cascade08Ï'è' *cascade08è'ğ'*cascade08ğ'ñ' *cascade08ñ'ü'*cascade08ü'ı' *cascade08ı'•(*cascade08•(—( *cascade08—(œ(*cascade08œ(( *cascade08(¦(*cascade08¦(§( *cascade08§(«(*cascade08«(¬( *cascade08¬(­(*cascade08­(®( *cascade08®(³(*cascade08³(´( *cascade08´(¸(*cascade08¸(º( *cascade08º(¿(*cascade08¿(À( *cascade08À(Ã(*cascade08Ã(Ä( *cascade08Ä(Ğ(*cascade08Ğ(Ò( *cascade08Ò(Ø(*cascade08Ø(Ù( *cascade08Ù(ã(*cascade08ã(ä( *cascade08ä(è(*cascade08è(é( *cascade08é(ñ(*cascade08ñ(ô( *cascade08ô(ø(*cascade08ø(€) *cascade08€)ˆ)*cascade08ˆ)‘) *cascade08‘)’)*cascade08’)•) *cascade08•)™)*cascade08™)š) *cascade08š)±)*cascade08±)²) *cascade08²)¶)*cascade08¶)·) *cascade08·)º)*cascade08º)¼) *cascade08¼)Ø)*cascade08Ø)Ú) *cascade08Ú)Ş)*cascade08Ş)ß) *cascade08ß)à)*cascade08à)á) *cascade08á)ƒ**cascade08ƒ*„* *cascade08„***cascade08** *cascade08*’**cascade08’*•* *cascade08•*±**cascade08±*²* *cascade08²*µ**cascade08µ*¶* *cascade08¶*º**cascade08º*»* *cascade08»*Â**cascade08Â*Å* *cascade08Å*ï**cascade08ï*ğ* *cascade08ğ*‘+*cascade08‘+’+ *cascade08’+š+*cascade08š+›+ *cascade08›++*cascade08+ + *cascade08 +­+*cascade08­+µ+ *cascade08µ+Á+*cascade08Á+Â+ *cascade08Â+Ó+*cascade08Ó+Ô+ *cascade08Ô+Û+*cascade08Û+Ü+ *cascade08Ü+ç+*cascade08ç+è+ *cascade08è+µ,*cascade08µ,·, *cascade08·,¹,*cascade08¹,º, *cascade08º,ê,*cascade08ê,õ, *cascade08õ,ù,*cascade08ù,ú, *cascade08ú,…-*cascade08…-†- *cascade08†-—-*cascade08—-˜- *cascade08˜-œ-*cascade08œ-- *cascade08-¨-*cascade08¨-©- *cascade08©-¬-*cascade08¬-­- *cascade08­-µ-*cascade08µ-·- *cascade08·-Ô-*cascade08Ô-ê- *cascade08ê-ˆ.*cascade08ˆ.‰. *cascade08‰.Š.*cascade08Š.Œ. *cascade08Œ..*cascade08.. *cascade08.–.*cascade08–.˜. *cascade08˜.À.*cascade08À.Á. *cascade08Á.Ø.*cascade08Ø.Ù. *cascade08Ù.ö.*cascade08ö.Š/ *cascade08Š/¡/*cascade08¡/¤/ *cascade08¤/1*cascade081à1 *cascade08à1ƒ2*cascade08ƒ2¾3 *cascade08¾3Ã3*cascade08Ã3Ä3 *cascade08Ä3Ç3*cascade08Ç3æ3 *cascade08æ3é3*cascade08é3ê3 *cascade08ê3ï3*cascade08ï3€4 *cascade08€4…4*cascade08…4†4 *cascade08†4‰4*cascade08‰4Í4 *cascade08Í4Ş4*cascade08Ş4­6 *cascade08­6°6*cascade08°6±6 *cascade08±6¶6*cascade08¶6ú6 *cascade08ú6‹7*cascade08‹7ú7 *cascade08ú7ü8*cascade08ü8ı8 *cascade08ı8¨9*cascade08¨9©9 *cascade08©9æ9*cascade08æ9ç9 *cascade08ç9—:*cascade08—:˜: *cascade08˜::*cascade08:Ÿ: *cascade08Ÿ:¥:*cascade08¥:¦: *cascade08¦:«:*cascade08«:¬: *cascade08¬:²:*cascade08²:³: *cascade08³:¾:*cascade08¾:¿: *cascade08¿:ä:*cascade08ä:ê: *cascade08ê:œ;*cascade08œ;; *cascade08;¬;*cascade08¬;­; *cascade08­;¿;*cascade08¿;À; *cascade08À;á;*cascade08á;â; *cascade08â;å;*cascade08å;æ; *cascade08æ;é;*cascade08é;í; *cascade08í;Ğ=*cascade08Ğ=Ô= *cascade08Ô=¢>*cascade08¢>¥> *cascade08¥>©>*cascade08©>Ë> *cascade08Ë>Ï>*cascade08Ï>Ğ> *cascade08Ğ>Ù>*cascade08Ù>İ> *cascade08İ>á>*cascade08á>…? *cascade08…?ã?*cascade08ã?ä? *cascade08ä?ğ?*cascade08ğ?ñ? *cascade08ñ?ù?*cascade08ù?ú? *cascade08ú?ü?*cascade08ü?ı? *cascade08ı?‹@*cascade08‹@@ *cascade08@œ@*cascade08œ@@ *cascade08@³@*cascade08³@Ò@ *cascade08Ò@Ô@*cascade08Ô@Õ@ *cascade08Õ@ù@*cascade08ù@A *cascade08AƒA*cascade08ƒA„A *cascade08„A‡A*cascade08‡AˆA *cascade08ˆA§A*cascade08§A¨A *cascade08¨AÌA*cascade08ÌAÍA *cascade08ÍAÛA*cascade08ÛAÜA *cascade08ÜAáA*cascade08áAâA *cascade08âAçA*cascade08çAèA *cascade08èAùA*cascade08ùAûA *cascade08ûA‡B*cascade08‡BˆB *cascade08ˆB–B*cascade08–B—B *cascade08—B¨B*cascade08¨BªB *cascade08ªBÂB*cascade08ÂBÄB *cascade08ÄBÅB*cascade08ÅBÆB *cascade08ÆBÇB*cascade08ÇBÈB *cascade08ÈBÊB*cascade08ÊBÌB *cascade08ÌBĞB*cascade08ĞB‰C *cascade08‰CÁF*cascade08ÁFĞF *cascade08ĞFîF*cascade08îFïF *cascade08ïFúF*cascade08úFûF *cascade08ûFşF*cascade08şFÿF *cascade08ÿF€G*cascade08€GœG *cascade08œG™H*cascade08™HÏH *cascade08ÏH“I *cascade08“I”I*cascade08”I•I *cascade08•I˜I*cascade08˜IšI *cascade08šI›I*cascade08›IœI *cascade08œII*cascade08I¡I *cascade08¡I¢I*cascade08¢I£I *cascade08£IÂI*cascade08ÂIåI *cascade08åIøI *cascade08øI´J *cascade08´JõP *cascade08õPùP*cascade08ùPıP *cascade08ıP‚Q*cascade08‚QQ *cascade08Q¡Q*cascade08¡Q¦Q *cascade08¦Q©Q*cascade08©Q«Q *cascade08«Q®Q*cascade08®Q¯Q *cascade08¯Q±Q*cascade08±Q²Q *cascade08²QºQ*cascade08ºQ»Q *cascade08»QÄQ*cascade08ÄQÕQ *cascade08ÕQóQ*cascade08óQ÷Q *cascade08÷QúQ*cascade08úQûQ *cascade08ûQÿQ*cascade08ÿQ€R *cascade08€R†R*cascade08†RˆR *cascade08ˆR‰R*cascade08‰RŠR *cascade08ŠR—R*cascade08—R™R *cascade08™R›R*cascade08›RœR *cascade08œR¬R*cascade08¬R®R *cascade08®R±R*cascade08±R²R *cascade08²R³R*cascade08³R´R *cascade08´R¶R*cascade08¶RÂR *cascade08ÂRÇR*cascade08ÇRÏR *cascade08ÏRÓR*cascade08ÓRÕR *cascade08ÕRÖR*cascade08ÖR×R *cascade08×RÜR*cascade08ÜRŞR *cascade08ŞRäR*cascade08äRåR *cascade08åRèR*cascade08èRéR *cascade08éRóR*cascade08óRõR *cascade08õRùR*cascade08ùRúR *cascade08úRşR*cascade08şR€S *cascade08€S‚S*cascade08‚SƒS *cascade08ƒS•S*cascade08•S–S *cascade08–S—S*cascade08—SšS *cascade08šS›S*cascade08›SS *cascade08SŸS*cascade08ŸS¡S *cascade08¡S¢S*cascade08¢S£S *cascade08£S¥S*cascade08¥S¨S *cascade08¨S¬S*cascade08¬S­S *cascade08­S¯S*cascade08¯S°S *cascade08°S±S*cascade08±S²S *cascade08²S³S*cascade08³S´S *cascade08´SµS*cascade08µS¶S *cascade08¶S¹S*cascade08¹S»S *cascade08»SÀS*cascade08ÀSÁS *cascade08ÁSÄS*cascade08ÄSÅS *cascade08ÅSÈS*cascade08ÈSÊS *cascade08ÊSËS*cascade08ËSÍS *cascade08ÍSÔS*cascade08ÔSÕS *cascade08ÕSÖS*cascade08ÖSåS *cascade08åS¤T*cascade08¤TÊT *cascade08ÊTÒT*cascade08ÒT×T *cascade08×TÎU*cascade08ÎUÓU *cascade08ÓUîU*cascade08îUïU *cascade08ïU¡V*cascade08¡V¦V *cascade08¦V¼V*cascade08¼V¾V *cascade08¾VÇV*cascade08ÇV«Z *cascade08«Z[*cascade08[İ] *cascade08İ]İ]*cascade08İ]c *cascade08c·d*cascade08·d›j *cascade08›jŸj*cascade08Ÿj¡j *cascade08¡j¢j*cascade08¢j¦j *cascade08¦j¨j*cascade08¨jªj *cascade08ªj«j*cascade08«j¬j *cascade08¬j­j*cascade08­j®j *cascade08®j¯j*cascade08¯jn *cascade08nŸn*cascade08Ÿn¡n *cascade08¡n£n*cascade08£n¤n *cascade08¤n¥n*cascade08¥n©n *cascade08©n«n*cascade08«n­n *cascade08­n®n*cascade08®n¯n *cascade08¯n°n*cascade08°n±n *cascade08±n²n*cascade08²n‡o *cascade082Afile:///c:/Users/Emmi/Documents/ekspertiz-node/public/pdfler.html

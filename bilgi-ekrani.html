@@ -1,0 +1,276 @@
+�E<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Müşteri Bilgilendirme Ekranı | OtoEksperPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --dark: #0f172a;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background: var(--dark);
+            color: white;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .brand {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .clock {
+            font-size: 2rem;
+            font-weight: 300;
+            color: #94a3b8;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 40px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+        }
+
+        /* Active Vehicle */
+        .active-vehicle-card {
+            background: rgba(37, 99, 235, 0.1);
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 50px rgba(37, 99, 235, 0.2);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 30px rgba(37, 99, 235, 0.1);
+            }
+
+            50% {
+                box-shadow: 0 0 60px rgba(37, 99, 235, 0.3);
+            }
+
+            100% {
+                box-shadow: 0 0 30px rgba(37, 99, 235, 0.1);
+            }
+        }
+
+        .plate-display {
+            font-size: 5rem;
+            font-weight: 900;
+            background: white;
+            color: black;
+            padding: 10px 40px;
+            border-radius: 10px;
+            border: 5px solid black;
+            font-family: sans-serif;
+            /* License plate font style */
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .status-text {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-top: 20px;
+            color: var(--warning);
+            text-transform: uppercase;
+        }
+
+        /* Queue List */
+        .queue-list {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 20px;
+        }
+
+        .queue-header {
+            font-size: 1.5rem;
+            color: #94a3b8;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .queue-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 1.2rem;
+        }
+
+        .queue-item:last-child {
+            border-bottom: none;
+        }
+
+        .q-plate {
+            font-weight: bold;
+        }
+
+        .q-status {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        /* Footer / Ticker */
+        footer {
+            background: var(--primary);
+            color: white;
+            padding: 10px 0;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .ticker {
+            display: inline-block;
+            animation: ticker 30s linear infinite;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        @keyframes ticker {
+            0% {
+                transform: translateX(100vw);
+            }
+
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="brand"><i class="fas fa-car-crash"></i> OTO EKSPER PRO</div>
+        <div class="clock" id="clock">12:00</div>
+    </header>
+
+    <main>
+        <!-- LARGE CARD: Currently Processing -->
+        <div class="active-vehicle-card" id="mainCard">
+            <div style="font-size: 1.5rem; color: #94a3b8; margin-bottom: 10px;">İŞLEMDE OLAN ARAÇ</div>
+            <div class="plate-display" id="mainPlate">-- --- ---</div>
+            <div style="font-size: 2rem;" id="mainModel">Araç Yükleniyor...</div>
+            <div class="status-text" id="mainStatus">KONTROL EDİLİYOR</div>
+            <div style="margin-top: 30px; display: flex; gap: 20px;">
+                <div style="text-align: center;">
+                    <i class="fas fa-cogs fa-2x" style="color: #64748b;"></i>
+                    <div style="font-size: 0.9rem; margin-top: 5px;">Motor</div>
+                </div>
+                <div style="text-align: center;">
+                    <i class="fas fa-car fa-2x" style="color: var(--success);"></i>
+                    <div style="font-size: 0.9rem; margin-top: 5px;">Kaporta</div>
+                </div>
+                <div style="text-align: center;">
+                    <i class="fas fa-desktop fa-2x" style="color: #64748b;"></i>
+                    <div style="font-size: 0.9rem; margin-top: 5px;">OBD</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SIDEBAR: Upcoming / Completed -->
+        <div class="queue-list">
+            <div class="queue-header">SON İŞLEMLER</div>
+            <div id="queueContainer">
+                <!-- Items injected here -->
+                <div class="queue-item">
+                    <span class="q-plate">34 ABC 123</span>
+                    <span class="q-status" style="color: var(--success);">TAMAMLANDI</span>
+                </div>
+                <div class="queue-item">
+                    <span class="q-plate">06 XYZ 987</span>
+                    <span class="q-status" style="color: var(--success);">TAMAMLANDI</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="ticker">
+            🚗 Oto Ekspertiz Pro'ya Hoşgeldiniz! • Güvenilir Raporlamanın Adresi • Çay/Kahve ikramımızdır, lütfen
+            bekleme salonunda dinleniniz. • Raporlarınız WhatsApp ile cebinize gelir. 📱
+        </div>
+    </footer>
+
+    <script>
+        // Clock
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+        }, 1000);
+
+        // Mock Data / Polling
+        const MOCK_VEHICLES = [
+            { plaka: '34 VP 5897', marka: 'BMW', model: '320i', status: 'KAPORTA KONTROLÜ' },
+            { plaka: '06 ANK 001', marka: 'Mercedes', model: 'C180', status: 'MOTOR TESTİ' },
+            { plaka: '35 IZM 3535', marka: 'Fiat', model: 'Egea', status: 'RAPORLANDI' }
+        ];
+
+        let index = 0;
+
+        async function fetchStatus() {
+            // In real app, fetch('/api/active-vehicles')
+            // Simulation: rotate mock data every 5 seconds
+            const v = MOCK_VEHICLES[index];
+
+            document.getElementById('mainPlate').innerText = v.plaka;
+            document.getElementById('mainModel').innerText = `${v.marka} ${v.model}`;
+            document.getElementById('mainStatus').innerText = v.status;
+
+            // Randomly change status color
+            const statusEl = document.getElementById('mainStatus');
+            if (v.status === 'RAPORLANDI') statusEl.style.color = 'var(--success)';
+            else statusEl.style.color = 'var(--warning)';
+
+            index = (index + 1) % MOCK_VEHICLES.length;
+        }
+
+        // Initial Load
+        fetchStatus();
+        setInterval(fetchStatus, 5000); // 5 sec update
+    </script>
+</body>
+
+</html>�E*cascade082Gfile:///c:/Users/Emmi/Documents/ekspertiz-node/public/bilgi-ekrani.html

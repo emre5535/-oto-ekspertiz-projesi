@@ -1,0 +1,112 @@
+“<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giri≈ü | Oto Ekspertiz</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .brand-logo {
+            color: var(--primary);
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-weight: 800;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-card">
+        <div class="brand-logo"><i class="fas fa-car-crash"></i> Ekspertiz</div>
+        <form id="loginForm">
+            <div class="form-group">
+                <label class="form-label">Kullanƒ±cƒ± Adƒ±</label>
+                <input type="text" id="kullaniciAdi" class="form-control" required placeholder="admin">
+            </div>
+            <div class="form-group">
+                <label class="form-label">≈ûifre</label>
+                <input type="password" id="sifre" class="form-control" required placeholder="******">
+            </div>
+            <button type="submit" class="btn btn-primary"
+                style="width: 100%; justify-content: center; padding: 0.75rem;">Giri≈ü Yap</button>
+        </form>
+        <p style="text-align: center; margin-top: 1rem; color: var(--text-light); font-size: 0.875rem;">Default: admin /
+            admin123</p>
+    </div>
+
+    <!-- script src="js/main.js" removed to isolate login issues -->
+    <script>
+        // Auto-redirect if user is already logged in
+        const existingUser = localStorage.getItem('user');
+        if (existingUser) {
+            try {
+                const userData = JSON.parse(existingUser);
+                if (userData && userData.id) {
+                    window.location.href = 'dashboard.html';
+                }
+            } catch (e) {
+                // Invalid user data, clear it
+                localStorage.removeItem('user');
+            }
+        }
+
+        document.querySelector('form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const kullaniciAdi = document.getElementById('kullaniciAdi').value;
+            const sifre = document.getElementById('sifre').value;
+
+            try {
+                const res = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ kullaniciAdi, sifre })
+                });
+
+                const data = await res.json();
+
+                if (data.basarili) {
+                    localStorage.setItem('user', JSON.stringify({
+                        id: data.user.id || 999,
+                        adSoyad: data.user.adSoyad,
+                        rol: data.user.role || data.user.rol,
+                        role: data.user.role || data.user.rol,
+                        isAdmin: data.user.isAdmin
+                    }));
+
+                    window.location.href = 'dashboard.html';
+                } else {
+                    alert('Giri≈ü Ba≈üarƒ±sƒ±z: ' + data.mesaj);
+                }
+            } catch (err) {
+                alert('Baƒülantƒ± Hatasƒ±: ' + err.message);
+                console.error(err);
+            }
+        });
+    </script>
+</body>
+
+</html>N *cascade08Nöö· *cascade08·„ *cascade08
+„È ÈÍ*cascade08
+Íõ õù*cascade08ùû *cascade08û°*cascade08°¢ *cascade08¢•*cascade08•ß *cascade08ß©*cascade08©´ *cascade08´Æ*cascade08Æ≤ *cascade08≤º*cascade08ºΩ *cascade08Ω…*cascade08…” *cascade08”Ÿ*cascade08Ÿ⁄ *cascade08⁄ﬂ*cascade08ﬂ‡ *cascade08‡˝*cascade08˝ê *cascade08êâ*cascade08â“ *cascade082@file:///c:/Users/Emmi/Documents/ekspertiz-node/public/index.html

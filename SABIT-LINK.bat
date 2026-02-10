@@ -1,0 +1,25 @@
+§@echo off
+chcp 65001 > nul
+echo.
+echo ================================================================
+echo   HIZLI Ä°NTERNET ERÄ°ÅÄ°MÄ° (CLOUDFLARE)
+echo ================================================================
+echo.
+echo "Sabit Link" yÃ¶ntemi yavaÅŸ olduÄŸu iÃ§in, size daha hÄ±zlÄ± olan
+echo Cloudflare altyapÄ±sÄ±nÄ± kullanÄ±yoruz.
+echo.
+echo 1. Birazdan aÅŸaÄŸÄ±da bir link Ã§Ä±kacak (.trycloudflare.com ile biten).
+echo 2. Bu linki kullanarak sisteme istediÄŸiniz yerden girebilirsiniz.
+echo.
+echo NOT: Bu link her kapatÄ±p aÃ§tÄ±ÄŸÄ±nÄ±zda deÄŸiÅŸebilir ama Ã‡OK HIZLIDIR.
+echo.
+echo TÃ¼nel baÅŸlatÄ±lÄ±yor...
+echo.
+
+:loop
+call npx cloudflared tunnel --url http://localhost:5000
+echo.
+echo BaÄŸlantÄ± koptu, 3 saniye sonra yeniden deneniyor...
+timeout /t 3
+goto loop
+r *cascade08ru*cascade08uv *cascade08vw*cascade08w *cascade08š*cascade08šï *cascade08ïû*cascade08ûü *cascade08üÿ*cascade08ÿ€ *cascade08€*cascade08‚ *cascade08‚„*cascade08„… *cascade08…ˆ*cascade08ˆ‰ *cascade08‰‹*cascade08‹” *cascade08”›*cascade08›œ *cascade08œ³*cascade08³µ *cascade08µ·*cascade08·¸ *cascade08¸»*cascade08»¼ *cascade08¼¿*cascade08¿Â *cascade08ÂÅ*cascade08ÅÆ *cascade08ÆÎ*cascade08ÎÏ *cascade08ÏÑ*cascade08ÑÒ *cascade08ÒÔ*cascade08ÔÖ *cascade08ÖÜ*cascade08Üİ *cascade08İà*cascade08àî *cascade08îğ*cascade08ğñ *cascade08ñù*cascade08ùú *cascade08ú„*cascade08„… *cascade08…†*cascade08†ˆ *cascade08ˆŠ*cascade08Š‹ *cascade08‹™*cascade08™š *cascade08š*cascade08  *cascade08 ¤*cascade08¤¥ *cascade08¥§*cascade08§¨ *cascade08¨­*cascade08­® *cascade08®²*cascade08²´ *cascade08´¶*cascade08¶¾ *cascade08¾Ã*cascade08ÃÄ *cascade08ÄÅ*cascade08ÅÈ *cascade08ÈÉ*cascade08ÉÊ *cascade08ÊÏ*cascade08ÏĞ *cascade08ĞÑ*cascade08ÑÒ *cascade08ÒÔ*cascade08ÔÕ *cascade08ÕÖ*cascade08Ö× *cascade08×Ø*cascade08ØÙ *cascade08ÙÜ*cascade08Üİ *cascade08İß*cascade08ßá *cascade08áâ *cascade08âã*cascade08ãå *cascade08åç*cascade08çè *cascade08èé*cascade08éê *cascade08êì*cascade08ìí *cascade08íî*cascade08îï *cascade08ïğ*cascade08ğõ *cascade08õ÷*cascade08÷ú *cascade08ú€*cascade08€ *cascade08*cascade08” *cascade08”• *cascade08•– *cascade08–—*cascade08—˜ *cascade08˜™ *cascade08™š*cascade08š› *cascade08›œ*cascade08œ *cascade08£*cascade08£¤ *cascade08¤§*cascade08§¨ *cascade08¨© *cascade08©²*cascade08²³ *cascade08³µ*cascade08µ· *cascade08·¸*cascade08¸Á *cascade08ÁÂ *cascade08ÂÅ*cascade08ÅÆ *cascade08ÆÇ *cascade08ÇÈ*cascade08ÈÉ *cascade08ÉÙ*cascade08Ùà *cascade08àâ *cascade08â‰ *cascade08‰’*cascade08’› *cascade08›œ*cascade08œ *cascade08¡*cascade08¡¢ *cascade08¢§*cascade08§° *cascade08°·*cascade08·¸ *cascade08¸¼*cascade08¼½ *cascade08½Ã*cascade08ÃÄ *cascade08ÄÅ*cascade08ÅË *cascade08Ë× *cascade08×Ø*cascade08Øä *cascade08äå *cascade08åæ*cascade08æç *cascade08çè*cascade08èé *cascade08éê*cascade08êë *cascade08ëì *cascade08ìğ*cascade08ğñ *cascade08ñò *cascade08òô*cascade08ôõ *cascade08õ÷*cascade08÷€ *cascade08€‚*cascade08‚ƒ *cascade08ƒ†*cascade08†™ *cascade08™š*cascade08š¥ *cascade08¥§ *cascade082=file:///c:/Users/Emmi/Documents/ekspertiz-node/SABIT-LINK.bat
